@@ -6,10 +6,10 @@
   flex-direction: column;
   height: 100vh;
   transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-  font-family: Arial, sans-serif;
+  /* font-family removed in favor of global var(--font-family) */
   border-right: none;
   box-shadow: var(--md-sys-elevation-level3);
-  color: var(--Neutral-90, #e1e2e3);
+  color: var(--md-sys-color-on-surface);
   font-family: var(--font-family);
   font-size: 13px;
   font-style: normal;
@@ -277,11 +277,13 @@
     color: var(--md-sys-color-on-surface-variant);
     font-family: var(--md-sys-typescale-body-large-font);
     font-size: var(--md-sys-typescale-body-large-size);
+    line-height: var(--md-sys-typescale-body-large-line-height);
     pointer-events: none;
     transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
 
     &.hidden {
       opacity: 0;
+      transform: translateY(-30%);
     }
   }
 
@@ -321,7 +323,7 @@
     }
 
     .material-symbols-outlined {
-      font-size: 20px;
+      font-size: 24px;
     }
   }
 

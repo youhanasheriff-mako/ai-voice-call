@@ -94,8 +94,8 @@ export default function SidePanel() {
           styles={{
             control: (baseStyles) => ({
               ...baseStyles,
-              background: "var(--Neutral-15)",
-              color: "var(--Neutral-90)",
+              background: "var(--md-sys-color-surface-container)",
+              color: "var(--md-sys-color-on-surface)",
               minHeight: "33px",
               maxHeight: "33px",
               border: 0,
@@ -103,10 +103,10 @@ export default function SidePanel() {
             option: (styles, { isFocused, isSelected }) => ({
               ...styles,
               backgroundColor: isFocused
-                ? "var(--Neutral-30)"
+                ? "var(--md-sys-color-surface-container-high)"
                 : isSelected
-                  ? "var(--Neutral-20)"
-                  : undefined,
+                ? "var(--md-sys-color-surface-container-highest)"
+                : undefined,
             }),
           }}
           defaultValue={selectedOption}

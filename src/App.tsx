@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-import { useRef, useState } from "react";
-import "./App.scss";
-import { LiveAPIProvider } from "./contexts/LiveAPIContext";
-import SidePanel from "./components/side-panel/SidePanel";
-import { Altair } from "./components/altair/Altair";
-import ControlTray from "./components/control-tray/ControlTray";
-import cn from "classnames";
-import { LiveClientOptions } from "./types";
+import { useRef, useState } from 'react';
+import './App.scss';
+import { LiveAPIProvider } from './contexts/LiveAPIContext';
+import SidePanel from './components/side-panel/SidePanel';
+import { Altair } from './components/altair/Altair';
+import ControlTray from './components/control-tray/ControlTray';
+import cn from 'classnames';
+import { LiveClientOptions } from './types';
 
 const API_KEY = process.env.REACT_APP_GEMINI_API_KEY as string;
-if (typeof API_KEY !== "string") {
-  throw new Error("set REACT_APP_GEMINI_API_KEY in .env");
+if (typeof API_KEY !== 'string') {
+  throw new Error('set REACT_APP_GEMINI_API_KEY in .env');
 }
 
 const apiOptions: LiveClientOptions = {
@@ -49,7 +49,7 @@ function App() {
               {/* APP goes here */}
               <Altair />
               <video
-                className={cn("stream", {
+                className={cn('stream', {
                   hidden: !videoRef.current || !videoStream,
                 })}
                 ref={videoRef}

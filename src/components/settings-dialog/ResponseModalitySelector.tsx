@@ -38,8 +38,8 @@ export default function ResponseModalitySelector() {
         styles={{
           control: (baseStyles) => ({
             ...baseStyles,
-            background: "var(--Neutral-15)",
-            color: "var(--Neutral-90)",
+            background: "var(--md-sys-color-surface-container)",
+            color: "var(--md-sys-color-on-surface)",
             minHeight: "33px",
             maxHeight: "33px",
             border: 0,
@@ -47,9 +47,9 @@ export default function ResponseModalitySelector() {
           option: (styles, { isFocused, isSelected }) => ({
             ...styles,
             backgroundColor: isFocused
-              ? "var(--Neutral-30)"
+              ? "var(--md-sys-color-surface-container-high)"
               : isSelected
-              ? "var(--Neutral-20)"
+              ? "var(--md-sys-color-surface-container-highest)"
               : undefined,
           }),
         }}
