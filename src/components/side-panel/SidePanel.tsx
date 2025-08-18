@@ -126,18 +126,8 @@ export default function SidePanel() {
           filter={(selectedOption?.value as LoggerFilterType) || 'none'}
         />
       </div>
-      <div
-        className={cn('input-container', { disabled: !connected })}
-        style={{
-          background: 'red',
-        }}
-      >
-        <div
-          className="input-content"
-          style={{
-            background: 'blue',
-          }}
-        >
+      <div className={cn('input-container', { disabled: !connected })}>
+        <div className="input-content">
           <textarea
             className="input-area"
             ref={inputRef}

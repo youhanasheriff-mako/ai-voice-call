@@ -2,9 +2,11 @@ import {
   ChangeEvent,
   FormEventHandler,
   useCallback,
+  useEffect,
   useMemo,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
 import "./settings-dialog.scss";
 import { useLiveAPIContext } from "../../contexts/LiveAPIContext";
 import VoiceSelector from "./VoiceSelector";
@@ -91,6 +93,26 @@ export default function SettingsDialog() {
     [config, setConfig]
   );
 
+  // Handle escape key to close modal
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && open) {
+        setOpen(false);
+      }
+    };
+
+    if (open) {
+      document.addEventListener('keydown', handleEscape);
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [open]);
+
   return (
     <>
       <button
@@ -100,7 +122,7 @@ export default function SettingsDialog() {
       >
         tune
       </button>
-      {open && (
+      {open && createPortal(
         <div className="modal-backdrop" onClick={() => setOpen(false)}>
           <dialog className="modal-dialog" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
@@ -161,7 +183,8 @@ export default function SettingsDialog() {
           </div>
             </div>
           </dialog>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
