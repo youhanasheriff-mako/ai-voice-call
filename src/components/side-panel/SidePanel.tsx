@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-import "./react-select.scss";
-import cn from "classnames";
-import { useEffect, useRef, useState } from "react";
-import { RiSidebarFoldLine, RiSidebarUnfoldLine } from "react-icons/ri";
-import Select from "react-select";
-import { useLiveAPIContext } from "../../contexts/LiveAPIContext";
-import { useLoggerStore } from "../../lib/store-logger";
-import Logger, { LoggerFilterType } from "../logger/Logger";
-import "./side-panel.scss";
+import './react-select.scss';
+import cn from 'classnames';
+import { useEffect, useRef, useState } from 'react';
+import { RiSidebarFoldLine, RiSidebarUnfoldLine } from 'react-icons/ri';
+import Select from 'react-select';
+import { useLiveAPIContext } from '../../contexts/LiveAPIContext';
+import { useLoggerStore } from '../../lib/store-logger';
+import Logger, { LoggerFilterType } from '../logger/Logger';
+import './side-panel.scss';
 
 const filterOptions = [
-  { value: "conversations", label: "Conversations" },
-  { value: "tools", label: "Tool Use" },
-  { value: "none", label: "All" },
+  { value: 'conversations', label: 'Conversations' },
+  { value: 'tools', label: 'Tool Use' },
+  { value: 'none', label: 'All' },
 ];
 
 export default function SidePanel() {
@@ -37,7 +37,7 @@ export default function SidePanel() {
   const loggerLastHeightRef = useRef<number>(-1);
   const { log, logs } = useLoggerStore();
 
-  const [textInput, setTextInput] = useState("");
+  const [textInput, setTextInput] = useState('');
   const [selectedOption, setSelectedOption] = useState<{
     value: string;
     label: string;
@@ -58,23 +58,23 @@ export default function SidePanel() {
 
   // listen for log events and store them
   useEffect(() => {
-    client.on("log", log);
+    client.on('log', log);
     return () => {
-      client.off("log", log);
+      client.off('log', log);
     };
   }, [client, log]);
 
   const handleSubmit = () => {
     client.send([{ text: textInput }]);
 
-    setTextInput("");
+    setTextInput('');
     if (inputRef.current) {
-      inputRef.current.innerText = "";
+      inputRef.current.innerText = '';
     }
   };
 
   return (
-    <div className={`side-panel ${open ? "open" : ""}`}>
+    <div className={`side-panel ${open ? 'open' : ''}`}>
       <header className="top">
         <h2>Audio Call</h2>
         {open ? (
@@ -92,57 +92,67 @@ export default function SidePanel() {
           className="react-select"
           classNamePrefix="react-select"
           styles={{
-            control: (baseStyles) => ({
+            control: baseStyles => ({
               ...baseStyles,
-              background: "var(--md-sys-color-surface-container)",
-              color: "var(--md-sys-color-on-surface)",
-              minHeight: "33px",
-              maxHeight: "33px",
+              background: 'var(--md-sys-color-surface-container)',
+              color: 'var(--md-sys-color-on-surface)',
+              minHeight: '33px',
+              maxHeight: '33px',
               border: 0,
             }),
             option: (styles, { isFocused, isSelected }) => ({
               ...styles,
               backgroundColor: isFocused
-                ? "var(--md-sys-color-surface-container-high)"
+                ? 'var(--md-sys-color-surface-container-high)'
                 : isSelected
-                ? "var(--md-sys-color-surface-container-highest)"
+                ? 'var(--md-sys-color-surface-container-highest)'
                 : undefined,
             }),
           }}
           defaultValue={selectedOption}
           options={filterOptions}
-          onChange={(e) => {
+          onChange={e => {
             setSelectedOption(e);
           }}
         />
-        <div className={cn("streaming-indicator", { connected })}>
+        <div className={cn('streaming-indicator', { connected })}>
           {connected
-            ? `🔵${open ? " Streaming" : ""}`
-            : `⏸️${open ? " Paused" : ""}`}
+            ? `🔵${open ? ' Streaming' : ''}`
+            : `⏸️${open ? ' Paused' : ''}`}
         </div>
       </section>
       <div className="side-panel-container" ref={loggerRef}>
         <Logger
-          filter={(selectedOption?.value as LoggerFilterType) || "none"}
+          filter={(selectedOption?.value as LoggerFilterType) || 'none'}
         />
       </div>
-      <div className={cn("input-container", { disabled: !connected })}>
-        <div className="input-content">
+      <div
+        className={cn('input-container', { disabled: !connected })}
+        style={{
+          background: 'red',
+        }}
+      >
+        <div
+          className="input-content"
+          style={{
+            background: 'blue',
+          }}
+        >
           <textarea
             className="input-area"
             ref={inputRef}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
+            onKeyDown={e => {
+              if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 e.stopPropagation();
                 handleSubmit();
               }
             }}
-            onChange={(e) => setTextInput(e.target.value)}
+            onChange={e => setTextInput(e.target.value)}
             value={textInput}
           ></textarea>
           <span
-            className={cn("input-content-placeholder", {
+            className={cn('input-content-placeholder', {
               hidden: textInput.length,
             })}
           >
