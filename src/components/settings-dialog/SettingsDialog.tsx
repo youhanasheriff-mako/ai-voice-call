@@ -92,15 +92,28 @@ export default function SettingsDialog() {
   );
 
   return (
-    <div className="settings-dialog">
+    <>
       <button
-        className="action-button material-symbols-outlined"
+        className="settings-icon-button material-symbols-outlined"
         onClick={() => setOpen(!open)}
+        title="Settings"
       >
-        settings
+        tune
       </button>
-      <dialog className="dialog" style={{ display: open ? "block" : "none" }}>
-        <div className={`dialog-container ${connected ? "disabled" : ""}`}>
+      {open && (
+        <div className="modal-backdrop" onClick={() => setOpen(false)}>
+          <dialog className="modal-dialog" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Settings</h2>
+              <button
+                className="close-button material-symbols-outlined"
+                onClick={() => setOpen(false)}
+                title="Close"
+              >
+                close
+              </button>
+            </div>
+            <div className={`dialog-container ${connected ? "disabled" : ""}`}>
           {connected && (
             <div className="connected-indicator">
               <p>
@@ -146,8 +159,10 @@ export default function SettingsDialog() {
               ))}
             </div>
           </div>
+            </div>
+          </dialog>
         </div>
-      </dialog>
-    </div>
+      )}
+    </>
   );
 }

@@ -42,7 +42,7 @@ function App() {
   return (
     <div className="App">
       <LiveAPIProvider options={apiOptions}>
-        <div className="streaming-console">
+        <div className="streaming-audio-call">
           <SidePanel />
           <main>
             <div className="main-app-area">
