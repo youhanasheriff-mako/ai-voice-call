@@ -16,10 +16,11 @@
 
 import { useRef, useState } from 'react';
 import './App.scss';
-import { LiveAPIProvider } from './contexts/LiveAPIContext';
+import { LiveAPIProvider, useLiveAPIContext } from './contexts/LiveAPIContext';
 import SidePanel from './components/side-panel/SidePanel';
 import { Altair } from './components/altair/Altair';
 import ControlTray from './components/control-tray/ControlTray';
+import Avatar from './components/avatar/Avatar';
 import cn from 'classnames';
 import { LiveClientOptions } from './types';
 
@@ -32,42 +33,62 @@ const apiOptions: LiveClientOptions = {
   apiKey: API_KEY,
 };
 
-function App() {
+function AppContent() {
   // this video reference is used for displaying the active stream, whether that is the webcam or screen capture
   // feel free to style as you see fit
   const videoRef = useRef<HTMLVideoElement>(null);
   // either the screen capture, the video or null, if null we hide it
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
+  const { connected } = useLiveAPIContext();
 
+  // Show avatar when connected but no video stream is active
+  const showAvatar = connected && !videoStream;
+  const showVideo = videoRef.current && videoStream;
+
+  return (
+    <div className="streaming-audio-call">
+      <SidePanel />
+      <main>
+        <div className="main-app-area">
+          {/* APP goes here */}
+          <Altair />
+          
+          {/* Video stream */}
+          <video
+            className={cn('stream', {
+              hidden: !showVideo,
+            })}
+            ref={videoRef}
+            autoPlay
+            playsInline
+          />
+          
+          {/* AI Avatar - shows when connected but no video */}
+          {showAvatar && (
+            <div className="avatar-container">
+              <Avatar size="large" animated={true} />
+            </div>
+          )}
+        </div>
+
+        <ControlTray
+          videoRef={videoRef}
+          supportsVideo={true}
+          onVideoStreamChange={setVideoStream}
+          enableEditingSettings={true}
+        >
+          {/* put your own buttons here */}
+        </ControlTray>
+      </main>
+    </div>
+  );
+}
+
+function App() {
   return (
     <div className="App">
       <LiveAPIProvider options={apiOptions}>
-        <div className="streaming-audio-call">
-          <SidePanel />
-          <main>
-            <div className="main-app-area">
-              {/* APP goes here */}
-              <Altair />
-              <video
-                className={cn('stream', {
-                  hidden: !videoRef.current || !videoStream,
-                })}
-                ref={videoRef}
-                autoPlay
-                playsInline
-              />
-            </div>
-
-            <ControlTray
-              videoRef={videoRef}
-              supportsVideo={true}
-              onVideoStreamChange={setVideoStream}
-              enableEditingSettings={true}
-            >
-              {/* put your own buttons here */}
-            </ControlTray>
-          </main>
-        </div>
+        <AppContent />
       </LiveAPIProvider>
     </div>
   );
