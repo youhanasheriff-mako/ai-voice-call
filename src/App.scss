@@ -240,6 +240,25 @@ body {
   transform: scale(1.02);
 }
 
+/* AI Avatar container */
+.avatar-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1;
+  max-width: 90%;
+  padding: 2rem;
+  background: var(--md-sys-color-surface-container-highest);
+  border-radius: 16px;
+  box-shadow: var(--md-sys-elevation-level2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &:hover {
+    box-shadow: var(--md-sys-elevation-level3);
+    transform: translateY(-2px);
+  }
+}
+
 /* Material Design 3 Button Styles */
 .md-button {
   display: inline-flex;

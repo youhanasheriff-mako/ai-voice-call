@@ -5,13 +5,13 @@ import {
   useEffect,
   useMemo,
   useState,
-} from "react";
-import { createPortal } from "react-dom";
-import "./settings-dialog.scss";
-import { useLiveAPIContext } from "../../contexts/LiveAPIContext";
-import VoiceSelector from "./VoiceSelector";
-import ResponseModalitySelector from "./ResponseModalitySelector";
-import { FunctionDeclaration, LiveConnectConfig, Tool } from "@google/genai";
+} from 'react';
+import { createPortal } from 'react-dom';
+import './settings-dialog.scss';
+import { useLiveAPIContext } from '../../contexts/LiveAPIContext';
+import VoiceSelector from './VoiceSelector';
+import ResponseModalitySelector from './ResponseModalitySelector';
+import { FunctionDeclaration, LiveConnectConfig, Tool } from '@google/genai';
 
 type FunctionDeclarationsTool = Tool & {
   functionDeclarations: FunctionDeclaration[];
@@ -28,33 +28,31 @@ export default function SettingsDialog() {
       .filter((t: Tool): t is FunctionDeclarationsTool =>
         Array.isArray((t as any).functionDeclarations)
       )
-      .map((t) => t.functionDeclarations)
-      .filter((fc) => !!fc)
+      .map(t => t.functionDeclarations)
+      .filter(fc => !!fc)
       .flat();
   }, [config]);
 
   // system instructions can come in many types
   const systemInstruction = useMemo(() => {
     if (!config.systemInstruction) {
-      return "";
+      return '';
     }
-    if (typeof config.systemInstruction === "string") {
+    if (typeof config.systemInstruction === 'string') {
       return config.systemInstruction;
     }
     if (Array.isArray(config.systemInstruction)) {
       return config.systemInstruction
-        .map((p) => (typeof p === "string" ? p : p.text))
-        .join("\n");
+        .map(p => (typeof p === 'string' ? p : p.text))
+        .join('\n');
     }
     if (
-      typeof config.systemInstruction === "object" &&
-      "parts" in config.systemInstruction
+      typeof config.systemInstruction === 'object' &&
+      'parts' in config.systemInstruction
     ) {
-      return (
-        config.systemInstruction.parts?.map((p) => p.text).join("\n") || ""
-      );
+      return config.systemInstruction.parts?.map(p => p.text).join('\n') || '';
     }
-    return "";
+    return '';
   }, [config]);
 
   const updateConfig: FormEventHandler<HTMLTextAreaElement> = useCallback(
@@ -73,14 +71,14 @@ export default function SettingsDialog() {
       const newConfig: LiveConnectConfig = {
         ...config,
         tools:
-          config.tools?.map((tool) => {
+          config.tools?.map(tool => {
             const fdTool = tool as FunctionDeclarationsTool;
             if (!Array.isArray(fdTool.functionDeclarations)) {
               return tool;
             }
             return {
               ...tool,
-              functionDeclarations: fdTool.functionDeclarations.map((fd) =>
+              functionDeclarations: fdTool.functionDeclarations.map(fd =>
                 fd.name === editedFdName
                   ? { ...fd, description: newDescription }
                   : fd
@@ -122,70 +120,75 @@ export default function SettingsDialog() {
       >
         tune
       </button>
-      {open && createPortal(
-        <div className="modal-backdrop" onClick={() => setOpen(false)}>
-          <dialog className="modal-dialog" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Settings</h2>
-              <button
-                className="close-button material-symbols-outlined"
-                onClick={() => setOpen(false)}
-                title="Close"
+      {open &&
+        createPortal(
+          <div className="modal-backdrop" onClick={() => setOpen(false)}>
+            <dialog className="modal-dialog" onClick={e => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>Settings</h2>
+                <button
+                  className="close-button material-symbols-outlined"
+                  onClick={() => setOpen(false)}
+                  title="Close"
+                >
+                  close
+                </button>
+              </div>
+              <div
+                className={`dialog-container settings-dialog ${
+                  connected ? 'disabled' : ''
+                }`}
               >
-                close
-              </button>
-            </div>
-            <div className={`dialog-container settings-dialog ${connected ? "disabled" : ""}`}>
-          {connected && (
-            <div className="connected-indicator">
-              <p>
-                These settings can only be applied before connecting and will
-                override other settings.
-              </p>
-            </div>
-          )}
-          <div className="mode-selectors">
-            <ResponseModalitySelector />
-            <VoiceSelector />
-          </div>
-
-          <h3>System Instructions</h3>
-          <textarea
-            className="system"
-            onChange={updateConfig}
-            value={systemInstruction}
-          />
-          <h4>Function declarations</h4>
-          <div className="function-declarations">
-            <div className="fd-rows">
-              {functionDeclarations.map((fd, fdKey) => (
-                <div className="fd-row" key={`function-${fdKey}`}>
-                  <span className="fd-row-name">{fd.name}</span>
-                  <span className="fd-row-args">
-                    {Object.keys(fd.parameters?.properties || {}).map(
-                      (item, k) => (
-                        <span key={k}>{item}</span>
-                      )
-                    )}
-                  </span>
-                  <input
-                    key={`fd-${fd.description}`}
-                    className="fd-row-description"
-                    type="text"
-                    defaultValue={fd.description}
-                    onBlur={(e) =>
-                      updateFunctionDescription(fd.name!, e.target.value)
-                    }
-                  />
+                {connected && (
+                  <div className="connected-indicator">
+                    <p>
+                      These settings can only be applied before connecting and
+                      will override other settings.
+                    </p>
+                  </div>
+                )}
+                <div className="mode-selectors">
+                  <ResponseModalitySelector />
+                  <VoiceSelector />
                 </div>
-              ))}
-            </div>
-          </div>
-            </div>
-          </dialog>
-        </div>,
-        document.body
-      )}
+
+                <h3>System Instructions</h3>
+                <textarea
+                  className="system"
+                  onChange={updateConfig}
+                  value={systemInstruction}
+                />
+                <h4>Function declarations</h4>
+                <div className="function-declarations">
+                  <div className="fd-rows">
+                    {functionDeclarations.map((fd, fdKey) => (
+                      <div className="fd-row" key={`function-${fdKey}`}>
+                        <span className="fd-row-name">{fd.name}</span>
+                        <span className="fd-row-args">
+                          {Object.keys(fd.parameters?.properties || {}).map(
+                            (item, k) => (
+                              <span key={k}>{item}</span>
+                            )
+                          )}
+                        </span>
+                        <input
+                          key={`fd-${fd.description}`}
+                          className="fd-row-description"
+                          type="text"
+                          defaultValue={fd.description}
+                          onBlur={e =>
+                            updateFunctionDescription(fd.name!, e.target.value)
+                          }
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </dialog>
+          </div>,
+          document.body
+        )}
     </>
   );
 }
