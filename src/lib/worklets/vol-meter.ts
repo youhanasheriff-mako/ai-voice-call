@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-const VolMeterWorket = `
+const VolMeterWorklet = `
   class VolMeter extends AudioWorkletProcessor {
     volume
     updateIntervalInMS
@@ -62,4 +62,4 @@ const VolMeterWorket = `
     }
   }`;
 
-export default VolMeterWorket;
+export default VolMeterWorklet;
