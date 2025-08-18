@@ -135,7 +135,7 @@ export default function SettingsDialog() {
                 close
               </button>
             </div>
-            <div className={`dialog-container ${connected ? "disabled" : ""}`}>
+            <div className={`dialog-container settings-dialog ${connected ? "disabled" : ""}`}>
           {connected && (
             <div className="connected-indicator">
               <p>
