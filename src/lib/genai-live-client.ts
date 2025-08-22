@@ -32,6 +32,7 @@ import { EventEmitter } from 'eventemitter3';
 import { difference } from 'lodash';
 import { LiveClientOptions, StreamingLog } from '../types';
 import { base64ToArrayBuffer } from './utils';
+import { audioChunkStorage } from './audio-chunk-storage';
 
 /**
  * Event types that can be emitted by the MultimodalLiveClient.
@@ -88,9 +89,15 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
   }
 
   protected config: LiveConnectConfig | null = null;
+  private _sessionId: string | null = null;
+  private _audioChunkIndex: number = 0;
 
   public getConfig() {
     return { ...this.config };
+  }
+
+  public getCurrentSessionId(): string | null {
+    return this._sessionId;
   }
 
   constructor(options: LiveClientOptions) {
@@ -120,6 +127,9 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
     this._status = 'connecting';
     this.config = config;
     this._model = model;
+    // Generate a unique session ID for this connection
+    this._sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    this._audioChunkIndex = 0;
 
     const callbacks: LiveCallbacks = {
       onopen: this.onopen,
@@ -154,6 +164,8 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
     this.session?.close();
     this._session = null;
     this._status = 'disconnected';
+    this._sessionId = null;
+    this._audioChunkIndex = 0;
 
     this.log('client.close', `Disconnected`);
     return true;
@@ -221,11 +233,32 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
         const otherParts = difference(parts, audioParts);
         // console.log('message', JSON.stringify(message, null, 2));
 
-        base64s.forEach(b64 => {
+        base64s.forEach(async (b64) => {
           if (b64) {
             const data = base64ToArrayBuffer(b64);
             this.emit('audio', data);
             this.log(`server.audio`, `buffer (${data.byteLength})`);
+            
+            // Save AI audio chunk to storage
+            if (this._sessionId) {
+              try {
+                await audioChunkStorage.addAudioChunk(
+                  data,
+                  this._sessionId,
+                  {
+                    duration: undefined, // Duration not available from GenAI response
+                    sampleRate: 24000, // Default sample rate for GenAI audio
+                    channels: 1, // Mono audio from GenAI
+                    compress: true // Enable compression for storage efficiency
+                  }
+                );
+                this._audioChunkIndex++;
+                this.log('storage.audio', `Saved AI audio chunk ${this._audioChunkIndex} for session ${this._sessionId}`);
+              } catch (error) {
+                console.warn('Failed to save AI audio chunk:', error);
+                this.log('storage.error', `Failed to save audio chunk: ${error instanceof Error ? error.message : 'Unknown error'}`);
+              }
+            }
           }
         });
         if (!otherParts.length) {
@@ -251,9 +284,35 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
     let hasVideo = false;
     for (const ch of chunks) {
       this.session?.sendRealtimeInput({ media: ch });
-      if (ch.mimeType.includes('audio')) {
+      
+      // Save user audio chunks to storage
+      if (ch.mimeType.includes('audio') && this._sessionId) {
         hasAudio = true;
+        try {
+          // Convert base64 to ArrayBuffer for storage
+          const audioData = base64ToArrayBuffer(ch.data);
+          
+          // Save user audio chunk with proper labeling
+          audioChunkStorage.addAudioChunk(
+            audioData,
+            `${this._sessionId}_user`, // Separate user audio with suffix
+            {
+              duration: undefined, // Duration not available from input
+              sampleRate: 16000, // Typical input sample rate
+              channels: 1, // Mono audio input
+              compress: true // Enable compression for storage efficiency
+            }
+          ).then(() => {
+            this.log('storage.user_audio', `Saved user audio chunk for session ${this._sessionId}`);
+          }).catch((error) => {
+            console.warn('Failed to save user audio chunk:', error);
+            this.log('storage.error', `Failed to save user audio chunk: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          });
+        } catch (error) {
+          console.warn('Failed to process user audio chunk for storage:', error);
+        }
       }
+      
       if (ch.mimeType.includes('image')) {
         hasVideo = true;
       }
