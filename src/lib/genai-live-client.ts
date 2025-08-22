@@ -91,6 +91,9 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
   protected config: LiveConnectConfig | null = null;
   private _sessionId: string | null = null;
   private _audioChunkIndex: number = 0;
+  private _sessionStartTime: number = 0;
+  private _userAudioIndex: number = 0;
+  private _aiAudioIndex: number = 0;
 
   public getConfig() {
     return { ...this.config };
@@ -98,6 +101,66 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
 
   public getCurrentSessionId(): string | null {
     return this._sessionId;
+  }
+
+  /**
+   * Gets the merged audio for the current session with proper synchronization
+   * @param options - Configuration for audio merging
+   * @returns Promise resolving to merged audio data
+   */
+  public async getMergedSessionAudio(options?: {
+    sampleRate?: number;
+    channels?: number;
+    silenceThreshold?: number;
+    maxGapFill?: number;
+  }): Promise<Uint8Array> {
+    if (!this._sessionId) {
+      throw new Error('No active session');
+    }
+
+    // Extract base session ID (remove any existing suffixes)
+    const baseSessionId = this._sessionId.replace(/_user$|_ai$/, '');
+    return audioChunkStorage.mergeSessionAudioSynchronized(
+      baseSessionId,
+      options
+    );
+  }
+
+  /**
+   * Gets session audio statistics
+   * @returns Object containing audio statistics for the current session
+   */
+  public async getSessionAudioStats(): Promise<{
+    userChunks: number;
+    aiChunks: number;
+    totalChunks: number;
+    sessionDuration: number;
+  } | null> {
+    if (!this._sessionId) {
+      return null;
+    }
+
+    try {
+      const baseSessionId = this._sessionId.replace(/_user$|_ai$/, '');
+      const userChunks = await audioChunkStorage.getAudioChunksBySession(
+        `${baseSessionId}_user`
+      );
+      const aiChunks = await audioChunkStorage.getAudioChunksBySession(
+        `${baseSessionId}_ai`
+      );
+
+      const sessionDuration = Date.now() - this._sessionStartTime;
+
+      return {
+        userChunks: userChunks.length,
+        aiChunks: aiChunks.length,
+        totalChunks: userChunks.length + aiChunks.length,
+        sessionDuration,
+      };
+    } catch (error) {
+      console.warn('Failed to get session audio stats:', error);
+      return null;
+    }
   }
 
   constructor(options: LiveClientOptions) {
@@ -128,8 +191,13 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
     this.config = config;
     this._model = model;
     // Generate a unique session ID for this connection
-    this._sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    this._sessionId = `session_${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
     this._audioChunkIndex = 0;
+    this._sessionStartTime = Date.now();
+    this._userAudioIndex = 0;
+    this._aiAudioIndex = 0;
 
     const callbacks: LiveCallbacks = {
       onopen: this.onopen,
@@ -166,6 +234,9 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
     this._status = 'disconnected';
     this._sessionId = null;
     this._audioChunkIndex = 0;
+    this._sessionStartTime = 0;
+    this._userAudioIndex = 0;
+    this._aiAudioIndex = 0;
 
     this.log('client.close', `Disconnected`);
     return true;
@@ -233,30 +304,43 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
         const otherParts = difference(parts, audioParts);
         // console.log('message', JSON.stringify(message, null, 2));
 
-        base64s.forEach(async (b64) => {
+        base64s.forEach(async b64 => {
           if (b64) {
             const data = base64ToArrayBuffer(b64);
             this.emit('audio', data);
             this.log(`server.audio`, `buffer (${data.byteLength})`);
-            
-            // Save AI audio chunk to storage
+
+            // Save AI audio chunk to storage with timing
             if (this._sessionId) {
               try {
-                await audioChunkStorage.addAudioChunk(
+                const relativeTime = Date.now() - this._sessionStartTime;
+                const chunkId = await audioChunkStorage.addAudioChunk(
                   data,
-                  this._sessionId,
+                  `${this._sessionId}_ai`,
                   {
                     duration: undefined, // Duration not available from GenAI response
                     sampleRate: 24000, // Default sample rate for GenAI audio
                     channels: 1, // Mono audio from GenAI
-                    compress: true // Enable compression for storage efficiency
+                    compress: true, // Enable compression for storage efficiency
+                    relativeTime: relativeTime,
+                    audioType: 'ai',
+                    sequenceIndex: this._aiAudioIndex,
                   }
                 );
+                this._aiAudioIndex++;
                 this._audioChunkIndex++;
-                this.log('storage.audio', `Saved AI audio chunk ${this._audioChunkIndex} for session ${this._sessionId}`);
+                this.log(
+                  'storage.audio',
+                  `Saved AI audio chunk ${this._aiAudioIndex} at ${relativeTime}ms for session ${this._sessionId}`
+                );
               } catch (error) {
                 console.warn('Failed to save AI audio chunk:', error);
-                this.log('storage.error', `Failed to save audio chunk: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                this.log(
+                  'storage.error',
+                  `Failed to save audio chunk: ${
+                    error instanceof Error ? error.message : 'Unknown error'
+                  }`
+                );
               }
             }
           }
@@ -284,35 +368,54 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
     let hasVideo = false;
     for (const ch of chunks) {
       this.session?.sendRealtimeInput({ media: ch });
-      
+
       // Save user audio chunks to storage
       if (ch.mimeType.includes('audio') && this._sessionId) {
         hasAudio = true;
         try {
           // Convert base64 to ArrayBuffer for storage
           const audioData = base64ToArrayBuffer(ch.data);
-          
-          // Save user audio chunk with proper labeling
-          audioChunkStorage.addAudioChunk(
-            audioData,
-            `${this._sessionId}_user`, // Separate user audio with suffix
-            {
-              duration: undefined, // Duration not available from input
-              sampleRate: 16000, // Typical input sample rate
-              channels: 1, // Mono audio input
-              compress: true // Enable compression for storage efficiency
-            }
-          ).then(() => {
-            this.log('storage.user_audio', `Saved user audio chunk for session ${this._sessionId}`);
-          }).catch((error) => {
-            console.warn('Failed to save user audio chunk:', error);
-            this.log('storage.error', `Failed to save user audio chunk: ${error instanceof Error ? error.message : 'Unknown error'}`);
-          });
+
+          // Save user audio chunk with proper labeling and timing
+          const relativeTime = Date.now() - this._sessionStartTime;
+          audioChunkStorage
+            .addAudioChunk(
+              audioData,
+              `${this._sessionId}_user`, // Separate user audio with suffix
+              {
+                duration: undefined, // Duration not available from input
+                sampleRate: 16000, // Typical input sample rate
+                channels: 1, // Mono audio input
+                compress: true, // Enable compression for storage efficiency
+                relativeTime: relativeTime,
+                audioType: 'user',
+                sequenceIndex: this._userAudioIndex,
+              }
+            )
+            .then(() => {
+              this._userAudioIndex++;
+              this.log(
+                'storage.user_audio',
+                `Saved user audio chunk ${this._userAudioIndex} at ${relativeTime}ms for session ${this._sessionId}`
+              );
+            })
+            .catch(error => {
+              console.warn('Failed to save user audio chunk:', error);
+              this.log(
+                'storage.error',
+                `Failed to save user audio chunk: ${
+                  error instanceof Error ? error.message : 'Unknown error'
+                }`
+              );
+            });
         } catch (error) {
-          console.warn('Failed to process user audio chunk for storage:', error);
+          console.warn(
+            'Failed to process user audio chunk for storage:',
+            error
+          );
         }
       }
-      
+
       if (ch.mimeType.includes('image')) {
         hasVideo = true;
       }

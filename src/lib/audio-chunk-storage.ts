@@ -15,6 +15,9 @@ export interface AudioChunk {
   sampleRate?: number;
   channels?: number;
   compressed?: boolean;
+  relativeTime?: number; // Time relative to session start in milliseconds
+  audioType?: 'user' | 'ai'; // Type of audio source
+  sequenceIndex?: number; // Sequential index within audio type
 }
 
 export interface SerializedAudioChunk {
@@ -29,6 +32,9 @@ export interface SerializedAudioChunk {
   compressed?: boolean;
   originalSize?: number;
   compressedSize?: number;
+  relativeTime?: number; // Time relative to session start in milliseconds
+  audioType?: 'user' | 'ai'; // Type of audio source
+  sequenceIndex?: number; // Sequential index within audio type
 }
 
 export interface AudioSession {
@@ -61,6 +67,9 @@ export class AudioChunkStorageService {
       sampleRate?: number;
       channels?: number;
       compress?: boolean;
+      relativeTime?: number;
+      audioType?: 'user' | 'ai';
+      sequenceIndex?: number;
     }
   ): Promise<string> {
     try {
@@ -106,7 +115,10 @@ export class AudioChunkStorageService {
         channels: options?.channels,
         compressed,
         originalSize,
-        compressedSize
+        compressedSize,
+        relativeTime: options?.relativeTime,
+        audioType: options?.audioType,
+        sequenceIndex: options?.sequenceIndex
       };
 
       // Store the chunk
@@ -319,6 +331,85 @@ export class AudioChunkStorageService {
       return merged;
     } catch (error) {
       throw new Error(`Failed to merge audio for session ${sessionId}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Merges audio chunks from both user and AI for a session chronologically
+   * @param baseSessionId - The base session identifier (without _user or _ai suffix)
+   * @param options - Configuration for merging behavior
+   * @returns Merged audio data with proper timing alignment
+   */
+  public async mergeSessionAudioSynchronized(
+    baseSessionId: string,
+    options?: {
+      sampleRate?: number;
+      channels?: number;
+      silenceThreshold?: number; // milliseconds of silence to insert between segments
+      maxGapFill?: number; // maximum gap in milliseconds to fill with silence
+    }
+  ): Promise<Uint8Array> {
+    try {
+      const defaultOptions = {
+        sampleRate: 16000,
+        channels: 1,
+        silenceThreshold: 100,
+        maxGapFill: 2000,
+        ...options
+      };
+
+      // Get both user and AI chunks
+      const userChunks = await this.getAudioChunksBySession(`${baseSessionId}_user`);
+      const aiChunks = await this.getAudioChunksBySession(`${baseSessionId}_ai`);
+      
+      // Combine and sort by relative time
+      const allChunks = [...userChunks, ...aiChunks]
+        .filter(chunk => chunk.relativeTime !== undefined)
+        .sort((a, b) => (a.relativeTime || 0) - (b.relativeTime || 0));
+
+      if (allChunks.length === 0) {
+        return new Uint8Array(0);
+      }
+
+      const mergedSegments: Uint8Array[] = [];
+      let lastEndTime = 0;
+
+      for (const chunk of allChunks) {
+        const chunkStartTime = chunk.relativeTime || 0;
+        const data = chunk.data instanceof ArrayBuffer ? new Uint8Array(chunk.data) : chunk.data;
+        
+        // Calculate gap between last chunk and current chunk
+        const gap = chunkStartTime - lastEndTime;
+        
+        // Insert silence if gap is significant but not too large
+        if (gap > defaultOptions.silenceThreshold && gap <= defaultOptions.maxGapFill) {
+          const silenceDuration = Math.min(gap, defaultOptions.maxGapFill);
+          const silenceSamples = Math.floor((silenceDuration / 1000) * defaultOptions.sampleRate * defaultOptions.channels);
+          const silenceData = new Uint8Array(silenceSamples * 2); // 16-bit samples
+          mergedSegments.push(silenceData);
+        }
+        
+        // Add the audio chunk
+        mergedSegments.push(data);
+        
+        // Estimate chunk duration (rough approximation)
+        const estimatedDuration = chunk.duration || (data.byteLength / (defaultOptions.sampleRate * defaultOptions.channels * 2)) * 1000;
+        lastEndTime = chunkStartTime + estimatedDuration;
+      }
+
+      // Calculate total size and merge
+      const totalSize = mergedSegments.reduce((sum, segment) => sum + segment.byteLength, 0);
+      const merged = new Uint8Array(totalSize);
+      let offset = 0;
+
+      for (const segment of mergedSegments) {
+        merged.set(segment, offset);
+        offset += segment.byteLength;
+      }
+
+      return merged;
+    } catch (error) {
+      throw new Error(`Failed to merge synchronized audio for session ${baseSessionId}: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
