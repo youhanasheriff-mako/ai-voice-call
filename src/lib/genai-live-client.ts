@@ -321,7 +321,7 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
                     duration: undefined, // Duration not available from GenAI response
                     sampleRate: 24000, // Default sample rate for GenAI audio
                     channels: 1, // Mono audio from GenAI
-                    compress: true, // Enable compression for storage efficiency
+                    compress: false, // Disable compression to preserve audio quality
                     relativeTime: relativeTime,
                     audioType: 'ai',
                     sequenceIndex: this._aiAudioIndex,
@@ -386,7 +386,7 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
                 duration: undefined, // Duration not available from input
                 sampleRate: 16000, // Typical input sample rate
                 channels: 1, // Mono audio input
-                compress: true, // Enable compression for storage efficiency
+                compress: false, // Disable compression to preserve audio quality
                 relativeTime: relativeTime,
                 audioType: 'user',
                 sequenceIndex: this._userAudioIndex,

@@ -542,7 +542,7 @@ export class AudioChunkStorageService {
       const defaultOptions = {
         sampleRate: 16000,
         channels: 1,
-        compress: true,
+        compress: false,
         ...options,
       };
 
