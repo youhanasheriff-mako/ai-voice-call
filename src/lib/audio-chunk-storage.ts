@@ -200,8 +200,8 @@ export class AudioChunkStorageService {
 
       // Clean up invalid chunk references
       if (invalidChunkIds.length > 0) {
-      await this.cleanupInvalidChunks(invalidChunkIds);
-    }
+        await this.cleanupInvalidChunks(invalidChunkIds);
+      }
 
       // Sort chunks by index to ensure correct playback order
       return chunks.sort((a, b) => a.index - b.index);
@@ -542,7 +542,7 @@ export class AudioChunkStorageService {
       const defaultOptions = {
         sampleRate: 16000,
         channels: 1,
-        compress: false,
+        compress: true,
         ...options,
       };
 

@@ -314,14 +314,14 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
             if (this._sessionId) {
               try {
                 const relativeTime = Date.now() - this._sessionStartTime;
-                const chunkId = await audioChunkStorage.addAudioChunk(
+                await audioChunkStorage.addAudioChunk(
                   data,
                   `${this._sessionId}_ai`,
                   {
                     duration: undefined, // Duration not available from GenAI response
                     sampleRate: 24000, // Default sample rate for GenAI audio
                     channels: 1, // Mono audio from GenAI
-                    compress: false, // Disable compression to preserve audio quality
+                    compress: true, // Disable compression to preserve audio quality
                     relativeTime: relativeTime,
                     audioType: 'ai',
                     sequenceIndex: this._aiAudioIndex,
@@ -334,7 +334,10 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
                   `Saved AI audio chunk ${this._aiAudioIndex} at ${relativeTime}ms for session ${this._sessionId}`
                 );
               } catch (error) {
-                console.error('Failed to save AI audio chunk to IndexedDB:', error);
+                console.error(
+                  'Failed to save AI audio chunk to IndexedDB:',
+                  error
+                );
                 this.log(
                   'storage.error',
                   `Failed to save AI audio chunk to IndexedDB: ${
@@ -386,7 +389,7 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
                 duration: undefined, // Duration not available from input
                 sampleRate: 16000, // Typical input sample rate
                 channels: 1, // Mono audio input
-                compress: false, // Disable compression to preserve audio quality
+                compress: true, // Disable compression to preserve audio quality
                 relativeTime: relativeTime,
                 audioType: 'user',
                 sequenceIndex: this._userAudioIndex,

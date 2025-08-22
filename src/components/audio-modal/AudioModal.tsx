@@ -308,7 +308,7 @@ export const AudioModal: React.FC<AudioModalProps> = ({
       await audioChunkStorage.saveMergedAudio(baseSessionId, mergedAudio, {
         sampleRate: sessionInfo?.sampleRate || 16000,
         channels: sessionInfo?.channels || 1,
-        compress: false,
+        compress: true,
       });
 
       setIsMerged(true);
