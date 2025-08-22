@@ -43,6 +43,8 @@ export const AudioModal: React.FC<AudioModalProps> = ({
   >(sessionId);
   const [isMerged, setIsMerged] = useState<boolean>(false);
   const [isMerging, setIsMerging] = useState<boolean>(false);
+  const [isViewingMergedSession, setIsViewingMergedSession] =
+    useState<boolean>(false);
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const audioBufferRef = useRef<AudioBuffer | null>(null);
@@ -102,6 +104,10 @@ export const AudioModal: React.FC<AudioModalProps> = ({
       setError(null);
 
       try {
+        // Check if this is a merged session
+        const isMergedSession = sessionId.endsWith('_merged');
+        setIsViewingMergedSession(isMergedSession);
+
         // Load session info and chunks
         const [info, chunks] = await Promise.all([
           audioChunkStorage.getSessionInfo(sessionId),
@@ -545,32 +551,34 @@ export const AudioModal: React.FC<AudioModalProps> = ({
                 </div>
 
                 {/* Merge Audio Button */}
-                <div className="merge-controls">
-                  <button
-                    className={`merge-btn ${isMerged ? 'merged' : ''}`}
-                    onClick={handleMergeAudio}
-                    disabled={isMerging || isMerged || !selectedSessionId}
-                  >
-                    {isMerging ? (
-                      <>
-                        <div className="spinner-small"></div>
-                        Merging...
-                      </>
-                    ) : isMerged ? (
-                      <>✅ Merged & Saved</>
-                    ) : (
-                      <>🔗 Merge & Save Audio</>
+                {!isViewingMergedSession && (
+                  <div className="merge-controls">
+                    <button
+                      className={`merge-btn ${isMerged ? 'merged' : ''}`}
+                      onClick={handleMergeAudio}
+                      disabled={isMerging || isMerged || !selectedSessionId}
+                    >
+                      {isMerging ? (
+                        <>
+                          <div className="spinner-small"></div>
+                          Merging...
+                        </>
+                      ) : isMerged ? (
+                        <>✅ Merged & Saved</>
+                      ) : (
+                        <>🔗 Merge & Save Audio</>
+                      )}
+                    </button>
+                    {isMerged && (
+                      <p className="merge-info">
+                        Audio has been merged and saved with session ID:{' '}
+                        <code>
+                          {selectedSessionId?.replace(/_user$|_ai$/, '')}_merged
+                        </code>
+                      </p>
                     )}
-                  </button>
-                  {isMerged && (
-                    <p className="merge-info">
-                      Audio has been merged and saved with session ID:{' '}
-                      <code>
-                        {selectedSessionId?.replace(/_user$|_ai$/, '')}_merged
-                      </code>
-                    </p>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
 
               {/* Chunk List */}
