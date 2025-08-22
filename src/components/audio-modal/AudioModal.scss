@@ -302,6 +302,86 @@
         }
       }
     }
+    
+    .merge-controls {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #e2e8f0;
+      text-align: center;
+      
+      .merge-btn {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 24px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin: 0 auto;
+        min-width: 180px;
+        
+        &:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 12px rgba(16, 185, 129, 0.4);
+        }
+        
+        &:active:not(:disabled) {
+          transform: translateY(0);
+        }
+        
+        &:disabled {
+          background: #9ca3af;
+          cursor: not-allowed;
+          box-shadow: none;
+          transform: none;
+        }
+        
+        &.merged {
+          background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+          cursor: default;
+          
+          &:hover {
+            transform: none;
+            box-shadow: 0 4px 8px rgba(107, 114, 128, 0.3);
+          }
+        }
+        
+        .spinner-small {
+          width: 16px;
+          height: 16px;
+          border: 2px solid rgba(255, 255, 255, 0.3);
+          border-top: 2px solid white;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+      }
+      
+      .merge-info {
+        margin-top: 12px;
+        font-size: 0.875rem;
+        color: #059669;
+        background: #ecfdf5;
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid #a7f3d0;
+        
+        code {
+          background: #d1fae5;
+          padding: 2px 6px;
+          border-radius: 4px;
+          font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+          font-size: 0.8rem;
+          color: #047857;
+        }
+      }
+    }
   }
   
   &__chunks {

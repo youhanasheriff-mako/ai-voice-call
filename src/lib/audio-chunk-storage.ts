@@ -1,6 +1,6 @@
 /**
  * Audio Chunk Storage Service
- * 
+ *
  * Manages storage and retrieval of audio chunks in local storage
  * with proper error handling and type safety.
  */
@@ -60,7 +60,7 @@ export class AudioChunkStorageService {
    * @throws Error if storage operation fails
    */
   public async addAudioChunk(
-    audioData: ArrayBuffer | Uint8Array, 
+    audioData: ArrayBuffer | Uint8Array,
     sessionId: string,
     options?: {
       duration?: number;
@@ -79,9 +79,10 @@ export class AudioChunkStorageService {
       const index = metadata.nextIndex;
 
       // Convert audio data to base64 for storage
-      const uint8Array = audioData instanceof ArrayBuffer 
-        ? new Uint8Array(audioData) 
-        : audioData;
+      const uint8Array =
+        audioData instanceof ArrayBuffer
+          ? new Uint8Array(audioData)
+          : audioData;
       const base64Data = this.arrayBufferToBase64(uint8Array);
 
       const originalSize = uint8Array.byteLength;
@@ -118,7 +119,7 @@ export class AudioChunkStorageService {
         compressedSize,
         relativeTime: options?.relativeTime,
         audioType: options?.audioType,
-        sequenceIndex: options?.sequenceIndex
+        sequenceIndex: options?.sequenceIndex,
       };
 
       // Store the chunk
@@ -133,7 +134,11 @@ export class AudioChunkStorageService {
 
       return chunkId;
     } catch (error) {
-      throw new Error(`Failed to add audio chunk: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to add audio chunk: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
+      );
     }
   }
 
@@ -145,7 +150,7 @@ export class AudioChunkStorageService {
   public async getAudioChunks(): Promise<AudioChunk[]> {
     try {
       const metadata = this.getMetadata();
-      
+
       if (metadata.chunkIds.length === 0) {
         return [];
       }
@@ -157,7 +162,7 @@ export class AudioChunkStorageService {
         try {
           const storageKey = `${AudioChunkStorageService.STORAGE_KEY}_${chunkId}`;
           const storedData = localStorage.getItem(storageKey);
-          
+
           if (!storedData) {
             invalidChunkIds.push(chunkId);
             continue;
@@ -165,7 +170,10 @@ export class AudioChunkStorageService {
 
           const serializedChunk: SerializedAudioChunk = JSON.parse(storedData);
           const rawData = this.base64ToArrayBuffer(serializedChunk.data);
-          const audioData = await this.decompressData(rawData, serializedChunk.compressed || false);
+          const audioData = await this.decompressData(
+            rawData,
+            serializedChunk.compressed || false
+          );
 
           chunks.push({
             id: serializedChunk.id,
@@ -176,7 +184,10 @@ export class AudioChunkStorageService {
             duration: serializedChunk.duration,
             sampleRate: serializedChunk.sampleRate,
             channels: serializedChunk.channels,
-            compressed: serializedChunk.compressed
+            compressed: serializedChunk.compressed,
+            relativeTime: serializedChunk.relativeTime,
+            audioType: serializedChunk.audioType,
+            sequenceIndex: serializedChunk.sequenceIndex,
           });
         } catch (error) {
           console.warn(`Failed to retrieve chunk ${chunkId}:`, error);
@@ -192,7 +203,11 @@ export class AudioChunkStorageService {
       // Sort chunks by index to ensure correct playback order
       return chunks.sort((a, b) => a.index - b.index);
     } catch (error) {
-      throw new Error(`Failed to retrieve audio chunks: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to retrieve audio chunks: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
+      );
     }
   }
 
@@ -203,7 +218,7 @@ export class AudioChunkStorageService {
   public clearAllChunks(): void {
     try {
       const metadata = this.getMetadata();
-      
+
       // Remove all chunk data
       for (const chunkId of metadata.chunkIds) {
         const storageKey = `${AudioChunkStorageService.STORAGE_KEY}_${chunkId}`;
@@ -214,10 +229,14 @@ export class AudioChunkStorageService {
       this.saveMetadata({
         chunkIds: [],
         nextIndex: 0,
-        lastUpdated: Date.now()
+        lastUpdated: Date.now(),
       });
     } catch (error) {
-      throw new Error(`Failed to clear audio chunks: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to clear audio chunks: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
+      );
     }
   }
 
@@ -241,14 +260,20 @@ export class AudioChunkStorageService {
    * @returns Array of audio chunks for the session, sorted by index
    * @throws Error if retrieval operation fails
    */
-  public async getAudioChunksBySession(sessionId: string): Promise<AudioChunk[]> {
+  public async getAudioChunksBySession(
+    sessionId: string
+  ): Promise<AudioChunk[]> {
     try {
       const allChunks = await this.getAudioChunks();
       return allChunks
         .filter(chunk => chunk.sessionId === sessionId)
         .sort((a, b) => a.index - b.index);
     } catch (error) {
-      throw new Error(`Failed to retrieve chunks for session ${sessionId}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to retrieve chunks for session ${sessionId}: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
+      );
     }
   }
 
@@ -281,7 +306,10 @@ export class AudioChunkStorageService {
 
       const startTime = Math.min(...chunks.map(c => c.timestamp));
       const endTime = Math.max(...chunks.map(c => c.timestamp));
-      const totalDuration = chunks.reduce((sum, chunk) => sum + (chunk.duration || 0), 0);
+      const totalDuration = chunks.reduce(
+        (sum, chunk) => sum + (chunk.duration || 0),
+        0
+      );
       const sampleRate = chunks.find(c => c.sampleRate)?.sampleRate;
       const channels = chunks.find(c => c.channels)?.channels;
 
@@ -292,10 +320,14 @@ export class AudioChunkStorageService {
         totalChunks: chunks.length,
         totalDuration,
         sampleRate,
-        channels
+        channels,
       };
     } catch (error) {
-      throw new Error(`Failed to get session info for ${sessionId}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to get session info for ${sessionId}: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
+      );
     }
   }
 
@@ -314,7 +346,10 @@ export class AudioChunkStorageService {
 
       // Calculate total size
       const totalSize = chunks.reduce((sum, chunk) => {
-        const data = chunk.data instanceof ArrayBuffer ? new Uint8Array(chunk.data) : chunk.data;
+        const data =
+          chunk.data instanceof ArrayBuffer
+            ? new Uint8Array(chunk.data)
+            : chunk.data;
         return sum + data.byteLength;
       }, 0);
 
@@ -323,14 +358,21 @@ export class AudioChunkStorageService {
       let offset = 0;
 
       for (const chunk of chunks) {
-        const data = chunk.data instanceof ArrayBuffer ? new Uint8Array(chunk.data) : chunk.data;
+        const data =
+          chunk.data instanceof ArrayBuffer
+            ? new Uint8Array(chunk.data)
+            : chunk.data;
         merged.set(data, offset);
         offset += data.byteLength;
       }
 
       return merged;
     } catch (error) {
-      throw new Error(`Failed to merge audio for session ${sessionId}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to merge audio for session ${sessionId}: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
+      );
     }
   }
 
@@ -350,55 +392,93 @@ export class AudioChunkStorageService {
     }
   ): Promise<Uint8Array> {
     try {
+      console.log(`[AudioChunkStorage] Starting audio merge for session: ${baseSessionId}`);
+      
       const defaultOptions = {
         sampleRate: 16000,
         channels: 1,
         silenceThreshold: 100,
         maxGapFill: 2000,
-        ...options
+        ...options,
       };
+      
+      console.log(`[AudioChunkStorage] Merge options:`, defaultOptions);
 
       // Get both user and AI chunks
-      const userChunks = await this.getAudioChunksBySession(`${baseSessionId}_user`);
-      const aiChunks = await this.getAudioChunksBySession(`${baseSessionId}_ai`);
+      const userChunks = await this.getAudioChunksBySession(
+        `${baseSessionId}_user`
+      );
+      const aiChunks = await this.getAudioChunksBySession(
+        `${baseSessionId}_ai`
+      );
       
+      console.log(`[AudioChunkStorage] Found ${userChunks.length} user chunks and ${aiChunks.length} AI chunks`);
+
       // Combine and sort by relative time
       const allChunks = [...userChunks, ...aiChunks]
         .filter(chunk => chunk.relativeTime !== undefined)
         .sort((a, b) => (a.relativeTime || 0) - (b.relativeTime || 0));
 
+      console.log(`[AudioChunkStorage] Total chunks with timing: ${allChunks.length}`);
+      
       if (allChunks.length === 0) {
+        console.log(`[AudioChunkStorage] No chunks with timing found, returning empty array`);
         return new Uint8Array(0);
       }
 
       const mergedSegments: Uint8Array[] = [];
       let lastEndTime = 0;
+      let silenceSegmentsAdded = 0;
 
+      console.log(`[AudioChunkStorage] Processing ${allChunks.length} chunks for merging`);
+      
       for (const chunk of allChunks) {
         const chunkStartTime = chunk.relativeTime || 0;
-        const data = chunk.data instanceof ArrayBuffer ? new Uint8Array(chunk.data) : chunk.data;
-        
+        const data =
+          chunk.data instanceof ArrayBuffer
+            ? new Uint8Array(chunk.data)
+            : chunk.data;
+
         // Calculate gap between last chunk and current chunk
         const gap = chunkStartTime - lastEndTime;
-        
+
         // Insert silence if gap is significant but not too large
-        if (gap > defaultOptions.silenceThreshold && gap <= defaultOptions.maxGapFill) {
+        if (
+          gap > defaultOptions.silenceThreshold &&
+          gap <= defaultOptions.maxGapFill
+        ) {
           const silenceDuration = Math.min(gap, defaultOptions.maxGapFill);
-          const silenceSamples = Math.floor((silenceDuration / 1000) * defaultOptions.sampleRate * defaultOptions.channels);
+          const silenceSamples = Math.floor(
+            (silenceDuration / 1000) *
+              defaultOptions.sampleRate *
+              defaultOptions.channels
+          );
           const silenceData = new Uint8Array(silenceSamples * 2); // 16-bit samples
           mergedSegments.push(silenceData);
+          silenceSegmentsAdded++;
+          console.log(`[AudioChunkStorage] Added ${silenceDuration}ms silence gap (${silenceData.byteLength} bytes)`);
         }
-        
+
         // Add the audio chunk
         mergedSegments.push(data);
-        
+
         // Estimate chunk duration (rough approximation)
-        const estimatedDuration = chunk.duration || (data.byteLength / (defaultOptions.sampleRate * defaultOptions.channels * 2)) * 1000;
+        const estimatedDuration =
+          chunk.duration ||
+          (data.byteLength /
+            (defaultOptions.sampleRate * defaultOptions.channels * 2)) *
+            1000;
         lastEndTime = chunkStartTime + estimatedDuration;
       }
 
       // Calculate total size and merge
-      const totalSize = mergedSegments.reduce((sum, segment) => sum + segment.byteLength, 0);
+      const totalSize = mergedSegments.reduce(
+        (sum, segment) => sum + segment.byteLength,
+        0
+      );
+      
+      console.log(`[AudioChunkStorage] Merging ${mergedSegments.length} segments (${silenceSegmentsAdded} silence segments) into ${totalSize} bytes`);
+      
       const merged = new Uint8Array(totalSize);
       let offset = 0;
 
@@ -407,9 +487,86 @@ export class AudioChunkStorageService {
         offset += segment.byteLength;
       }
 
+      console.log(`[AudioChunkStorage] Successfully merged audio for session ${baseSessionId}: ${merged.byteLength} bytes`);
       return merged;
     } catch (error) {
-      throw new Error(`Failed to merge synchronized audio for session ${baseSessionId}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error(`[AudioChunkStorage] Error merging audio for session ${baseSessionId}:`, error);
+      throw new Error(
+        `Failed to merge synchronized audio for session ${baseSessionId}: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
+      );
+    }
+  }
+
+  /**
+   * Saves merged audio as a single chunk with the base session ID
+   * @param baseSessionId - The base session identifier (without _user or _ai suffix)
+   * @param mergedAudio - The merged audio data
+   * @param options - Additional options for the saved audio
+   * @returns The ID of the saved merged audio chunk
+   */
+  public async saveMergedAudio(
+    baseSessionId: string,
+    mergedAudio: Uint8Array,
+    options?: {
+      sampleRate?: number;
+      channels?: number;
+      compress?: boolean;
+    }
+  ): Promise<string> {
+    try {
+      const mergedSessionId = `${baseSessionId}_merged`;
+      const defaultOptions = {
+        sampleRate: 16000,
+        channels: 1,
+        compress: true,
+        ...options,
+      };
+
+      // Calculate estimated duration
+      const estimatedDuration =
+        (mergedAudio.byteLength /
+          (defaultOptions.sampleRate * defaultOptions.channels * 2)) *
+        1000;
+
+      // Save the merged audio as a single chunk
+      const chunkId = await this.addAudioChunk(mergedAudio, mergedSessionId, {
+        duration: estimatedDuration,
+        sampleRate: defaultOptions.sampleRate,
+        channels: defaultOptions.channels,
+        compress: defaultOptions.compress,
+        relativeTime: 0,
+        audioType: 'ai', // Mark as 'ai' type for consistency
+        sequenceIndex: 0,
+      });
+
+      return chunkId;
+    } catch (error) {
+      throw new Error(
+        `Failed to save merged audio for session ${baseSessionId}: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
+      );
+    }
+  }
+
+  /**
+   * Checks if a session has been merged
+   * @param baseSessionId - The base session identifier
+   * @returns True if merged audio exists for this session
+   */
+  public async isMergedAudioAvailable(baseSessionId: string): Promise<boolean> {
+    try {
+      const mergedSessionId = `${baseSessionId}_merged`;
+      const chunks = await this.getAudioChunksBySession(mergedSessionId);
+      return chunks.length > 0;
+    } catch (error) {
+      console.warn(
+        `Failed to check merged audio availability for session ${baseSessionId}:`,
+        error
+      );
+      return false;
     }
   }
 
@@ -441,11 +598,17 @@ export class AudioChunkStorageService {
       }
 
       // Update metadata
-      metadata.chunkIds = metadata.chunkIds.filter(id => !chunksToDelete.includes(id));
+      metadata.chunkIds = metadata.chunkIds.filter(
+        id => !chunksToDelete.includes(id)
+      );
       metadata.lastUpdated = Date.now();
       this.saveMetadata(metadata);
     } catch (error) {
-      throw new Error(`Failed to delete session ${sessionId}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to delete session ${sessionId}: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
+      );
     }
   }
 
@@ -491,12 +654,14 @@ export class AudioChunkStorageService {
 
   private getMetadata(): AudioChunkMetadata {
     try {
-      const stored = localStorage.getItem(AudioChunkStorageService.METADATA_KEY);
+      const stored = localStorage.getItem(
+        AudioChunkStorageService.METADATA_KEY
+      );
       if (!stored) {
         return {
           chunkIds: [],
           nextIndex: 0,
-          lastUpdated: Date.now()
+          lastUpdated: Date.now(),
         };
       }
       return JSON.parse(stored);
@@ -505,19 +670,24 @@ export class AudioChunkStorageService {
       return {
         chunkIds: [],
         nextIndex: 0,
-        lastUpdated: Date.now()
+        lastUpdated: Date.now(),
       };
     }
   }
 
   private saveMetadata(metadata: AudioChunkMetadata): void {
-    localStorage.setItem(AudioChunkStorageService.METADATA_KEY, JSON.stringify(metadata));
+    localStorage.setItem(
+      AudioChunkStorageService.METADATA_KEY,
+      JSON.stringify(metadata)
+    );
   }
 
   private cleanupInvalidChunks(invalidChunkIds: string[]): void {
     try {
       const metadata = this.getMetadata();
-      metadata.chunkIds = metadata.chunkIds.filter(id => !invalidChunkIds.includes(id));
+      metadata.chunkIds = metadata.chunkIds.filter(
+        id => !invalidChunkIds.includes(id)
+      );
       metadata.lastUpdated = Date.now();
       this.saveMetadata(metadata);
     } catch (error) {
@@ -532,13 +702,13 @@ export class AudioChunkStorageService {
         const stream = new CompressionStream('gzip');
         const writer = stream.writable.getWriter();
         const reader = stream.readable.getReader();
-        
+
         writer.write(data.slice());
         writer.close();
-        
+
         const chunks: Uint8Array[] = [];
         let done = false;
-        
+
         while (!done) {
           const { value, done: readerDone } = await reader.read();
           done = readerDone;
@@ -546,27 +716,33 @@ export class AudioChunkStorageService {
             chunks.push(value);
           }
         }
-        
+
         // Combine chunks
-        const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
+        const totalLength = chunks.reduce(
+          (sum, chunk) => sum + chunk.length,
+          0
+        );
         const result = new Uint8Array(totalLength);
         let offset = 0;
         for (const chunk of chunks) {
           result.set(chunk, offset);
           offset += chunk.length;
         }
-        
+
         return result;
       } catch (error) {
         console.warn('Native compression failed:', error);
       }
     }
-    
+
     // Fallback: simple RLE compression for repetitive data
     return this.simpleCompress(data);
   }
 
-  private async decompressData(data: Uint8Array, compressed: boolean): Promise<Uint8Array> {
+  private async decompressData(
+    data: Uint8Array,
+    compressed: boolean
+  ): Promise<Uint8Array> {
     if (!compressed) {
       return data;
     }
@@ -577,13 +753,13 @@ export class AudioChunkStorageService {
         const stream = new DecompressionStream('gzip');
         const writer = stream.writable.getWriter();
         const reader = stream.readable.getReader();
-        
+
         writer.write(data.slice());
         writer.close();
-        
+
         const chunks: Uint8Array[] = [];
         let done = false;
-        
+
         while (!done) {
           const { value, done: readerDone } = await reader.read();
           done = readerDone;
@@ -591,22 +767,25 @@ export class AudioChunkStorageService {
             chunks.push(value);
           }
         }
-        
+
         // Combine chunks
-        const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
+        const totalLength = chunks.reduce(
+          (sum, chunk) => sum + chunk.length,
+          0
+        );
         const result = new Uint8Array(totalLength);
         let offset = 0;
         for (const chunk of chunks) {
           result.set(chunk, offset);
           offset += chunk.length;
         }
-        
+
         return result;
       } catch (error) {
         console.warn('Native decompression failed:', error);
       }
     }
-    
+
     // Fallback: simple RLE decompression
     return this.simpleDecompress(data);
   }
@@ -615,16 +794,20 @@ export class AudioChunkStorageService {
     // Simple run-length encoding for repetitive audio data
     const compressed: number[] = [];
     let i = 0;
-    
+
     while (i < data.length) {
       const current = data[i];
       let count = 1;
-      
+
       // Count consecutive identical bytes (max 255)
-      while (i + count < data.length && data[i + count] === current && count < 255) {
+      while (
+        i + count < data.length &&
+        data[i + count] === current &&
+        count < 255
+      ) {
         count++;
       }
-      
+
       if (count > 3) {
         // Use RLE for runs of 4 or more
         compressed.push(255, count, current); // 255 is escape byte
@@ -634,17 +817,17 @@ export class AudioChunkStorageService {
           compressed.push(current);
         }
       }
-      
+
       i += count;
     }
-    
+
     return new Uint8Array(compressed);
   }
 
   private simpleDecompress(data: Uint8Array): Uint8Array {
     const decompressed: number[] = [];
     let i = 0;
-    
+
     while (i < data.length) {
       if (data[i] === 255 && i + 2 < data.length) {
         // RLE sequence
@@ -660,7 +843,7 @@ export class AudioChunkStorageService {
         i++;
       }
     }
-    
+
     return new Uint8Array(decompressed);
   }
 }

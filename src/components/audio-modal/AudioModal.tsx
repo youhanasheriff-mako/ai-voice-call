@@ -31,6 +31,8 @@ export const AudioModal: React.FC<AudioModalProps> = ({ isOpen, onClose, session
   const [error, setError] = useState<string | null>(null);
   const [availableSessions, setAvailableSessions] = useState<string[]>([]);
   const [selectedSessionId, setSelectedSessionId] = useState<string | undefined>(sessionId);
+  const [isMerged, setIsMerged] = useState<boolean>(false);
+  const [isMerging, setIsMerging] = useState<boolean>(false);
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const audioBufferRef = useRef<AudioBuffer | null>(null);
@@ -67,6 +69,17 @@ export const AudioModal: React.FC<AudioModalProps> = ({ isOpen, onClose, session
     }
   }, [selectedSessionId]);
 
+  // Check if session is merged
+  const checkMergeStatus = useCallback(async (baseSessionId: string) => {
+    try {
+      const merged = await audioChunkStorage.isMergedAudioAvailable(baseSessionId);
+      setIsMerged(merged);
+    } catch (err) {
+      console.warn('Failed to check merge status:', err);
+      setIsMerged(false);
+    }
+  }, []);
+
   // Load session data
   const loadSessionData = useCallback(async (sessionId: string) => {
     if (!sessionId) return;
@@ -94,13 +107,17 @@ export const AudioModal: React.FC<AudioModalProps> = ({ isOpen, onClose, session
 
       // Create audio buffer
       await createAudioBuffer(merged, info.sampleRate || 44100, info.channels || 1);
+      
+      // Check if this session has been merged (extract base session ID)
+      const baseSessionId = sessionId.replace(/_user$|_ai$/, '');
+      await checkMergeStatus(baseSessionId);
     } catch (err) {
       console.error('Failed to load session data:', err);
       setError(err instanceof Error ? err.message : 'Failed to load session data');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [checkMergeStatus]);
 
   // Create audio buffer from merged data
   const createAudioBuffer = useCallback(async (audioData: Uint8Array, sampleRate: number, channels: number) => {
@@ -224,6 +241,41 @@ export const AudioModal: React.FC<AudioModalProps> = ({ isOpen, onClose, session
     
     setPlaybackState(prev => ({ ...prev, volume: clampedVolume }));
   }, []);
+
+  // Handle merge button click
+  const handleMergeAudio = useCallback(async () => {
+    if (!selectedSessionId || isMerging || isMerged) return;
+    
+    setIsMerging(true);
+    setError(null);
+    
+    try {
+      // Extract base session ID
+      const baseSessionId = selectedSessionId.replace(/_user$|_ai$/, '');
+      
+      // Merge audio synchronously
+      const mergedAudio = await audioChunkStorage.mergeSessionAudioSynchronized(baseSessionId);
+      
+      if (mergedAudio.byteLength === 0) {
+        throw new Error('No audio data found to merge');
+      }
+      
+      // Save merged audio
+      await audioChunkStorage.saveMergedAudio(baseSessionId, mergedAudio, {
+        sampleRate: sessionInfo?.sampleRate || 16000,
+        channels: sessionInfo?.channels || 1,
+        compress: true
+      });
+      
+      setIsMerged(true);
+      console.log(`Successfully merged and saved audio for session: ${baseSessionId}`);
+    } catch (err) {
+      console.error('Failed to merge audio:', err);
+      setError(`Failed to merge audio: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    } finally {
+      setIsMerging(false);
+    }
+  }, [selectedSessionId, isMerging, isMerged, sessionInfo]);
 
   // Update current time during playback
   useEffect(() => {
@@ -420,6 +472,35 @@ export const AudioModal: React.FC<AudioModalProps> = ({ isOpen, onClose, session
                     />
                     <span>{Math.round(playbackState.volume * 100)}%</span>
                   </div>
+                </div>
+                
+                {/* Merge Audio Button */}
+                <div className="merge-controls">
+                  <button 
+                    className={`merge-btn ${isMerged ? 'merged' : ''}`}
+                    onClick={handleMergeAudio}
+                    disabled={isMerging || isMerged || !selectedSessionId}
+                  >
+                    {isMerging ? (
+                      <>
+                        <div className="spinner-small"></div>
+                        Merging...
+                      </>
+                    ) : isMerged ? (
+                      <>
+                        ✅ Merged & Saved
+                      </>
+                    ) : (
+                      <>
+                        🔗 Merge & Save Audio
+                      </>
+                    )}
+                  </button>
+                  {isMerged && (
+                    <p className="merge-info">
+                      Audio has been merged and saved with session ID: <code>{selectedSessionId?.replace(/_user$|_ai$/, '')}_merged</code>
+                    </p>
+                  )}
                 </div>
               </div>
 
