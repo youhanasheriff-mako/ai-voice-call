@@ -22,6 +22,7 @@ import Select from "react-select";
 import { useLiveAPIContext } from "../../contexts/LiveAPIContext";
 import { useLoggerStore } from "../../lib/store-logger";
 import Logger, { LoggerFilterType } from "../logger/Logger";
+import AudioModal from "../audio-modal/AudioModal";
 import "./side-panel.scss";
 
 const filterOptions = [
@@ -33,6 +34,7 @@ const filterOptions = [
 export default function SidePanel() {
   const { connected, client } = useLiveAPIContext();
   const [open, setOpen] = useState(true);
+  const [isAudioModalOpen, setIsAudioModalOpen] = useState(false);
   const loggerRef = useRef<HTMLDivElement>(null);
   const loggerLastHeightRef = useRef<number>(-1);
   const { log, logs } = useLoggerStore();
@@ -77,15 +79,24 @@ export default function SidePanel() {
     <div className={`side-panel ${open ? "open" : ""}`}>
       <header className="top">
         <h2>Console</h2>
-        {open ? (
-          <button className="opener" onClick={() => setOpen(false)}>
-            <RiSidebarFoldLine color="#b4b8bb" />
+        <div className="header-controls">
+          <button 
+            className="audio-modal-btn" 
+            onClick={() => setIsAudioModalOpen(true)}
+            title="Open Audio Sessions"
+          >
+            <span className="material-symbols-outlined">headphones</span>
           </button>
-        ) : (
-          <button className="opener" onClick={() => setOpen(true)}>
-            <RiSidebarUnfoldLine color="#b4b8bb" />
-          </button>
-        )}
+          {open ? (
+            <button className="opener" onClick={() => setOpen(false)}>
+              <RiSidebarFoldLine color="#b4b8bb" />
+            </button>
+          ) : (
+            <button className="opener" onClick={() => setOpen(true)}>
+              <RiSidebarUnfoldLine color="#b4b8bb" />
+            </button>
+          )}
+        </div>
       </header>
       <section className="indicators">
         <Select
@@ -157,6 +168,12 @@ export default function SidePanel() {
           </button>
         </div>
       </div>
+      {isAudioModalOpen && (
+         <AudioModal 
+           isOpen={isAudioModalOpen} 
+           onClose={() => setIsAudioModalOpen(false)} 
+         />
+       )}
     </div>
   );
 }

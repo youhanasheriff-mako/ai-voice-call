@@ -38,6 +38,43 @@
     padding: 12px 20px 12px 25px;
     border-bottom: 1px solid var(--Neutral-20);
 
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .audio-modal-btn {
+      background: transparent;
+      border: 1px solid var(--Neutral-20);
+      border-radius: 6px;
+      color: var(--Neutral-70);
+      cursor: pointer;
+      padding: 6px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease-in;
+      font-size: 16px;
+      height: 30px;
+      min-width: 30px;
+
+      &:hover {
+        background: var(--Neutral-15);
+        color: var(--Neutral-90);
+        border-color: var(--Neutral-30);
+      }
+
+      &:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px var(--Blue-500);
+      }
+
+      .material-symbols-outlined {
+        font-size: 16px;
+      }
+    }
+
     h2 {
       position: relative;
       color: var(--Neutral-90, #e1e2e3);
