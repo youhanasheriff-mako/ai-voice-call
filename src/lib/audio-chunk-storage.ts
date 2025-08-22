@@ -392,8 +392,10 @@ export class AudioChunkStorageService {
     }
   ): Promise<Uint8Array> {
     try {
-      console.log(`[AudioChunkStorage] Starting audio merge for session: ${baseSessionId}`);
-      
+      console.log(
+        `[AudioChunkStorage] Starting audio merge for session: ${baseSessionId}`
+      );
+
       const defaultOptions = {
         sampleRate: 16000,
         channels: 1,
@@ -401,7 +403,7 @@ export class AudioChunkStorageService {
         maxGapFill: 2000,
         ...options,
       };
-      
+
       console.log(`[AudioChunkStorage] Merge options:`, defaultOptions);
 
       // Get both user and AI chunks
@@ -411,18 +413,24 @@ export class AudioChunkStorageService {
       const aiChunks = await this.getAudioChunksBySession(
         `${baseSessionId}_ai`
       );
-      
-      console.log(`[AudioChunkStorage] Found ${userChunks.length} user chunks and ${aiChunks.length} AI chunks`);
+
+      console.log(
+        `[AudioChunkStorage] Found ${userChunks.length} user chunks and ${aiChunks.length} AI chunks`
+      );
 
       // Combine and sort by relative time
       const allChunks = [...userChunks, ...aiChunks]
         .filter(chunk => chunk.relativeTime !== undefined)
         .sort((a, b) => (a.relativeTime || 0) - (b.relativeTime || 0));
 
-      console.log(`[AudioChunkStorage] Total chunks with timing: ${allChunks.length}`);
-      
+      console.log(
+        `[AudioChunkStorage] Total chunks with timing: ${allChunks.length}`
+      );
+
       if (allChunks.length === 0) {
-        console.log(`[AudioChunkStorage] No chunks with timing found, returning empty array`);
+        console.log(
+          `[AudioChunkStorage] No chunks with timing found, returning empty array`
+        );
         return new Uint8Array(0);
       }
 
@@ -430,8 +438,10 @@ export class AudioChunkStorageService {
       let lastEndTime = 0;
       let silenceSegmentsAdded = 0;
 
-      console.log(`[AudioChunkStorage] Processing ${allChunks.length} chunks for merging`);
-      
+      console.log(
+        `[AudioChunkStorage] Processing ${allChunks.length} chunks for merging`
+      );
+
       for (const chunk of allChunks) {
         const chunkStartTime = chunk.relativeTime || 0;
         const data =
@@ -456,7 +466,9 @@ export class AudioChunkStorageService {
           const silenceData = new Uint8Array(silenceSamples * 2); // 16-bit samples
           mergedSegments.push(silenceData);
           silenceSegmentsAdded++;
-          console.log(`[AudioChunkStorage] Added ${silenceDuration}ms silence gap (${silenceData.byteLength} bytes)`);
+          console.log(
+            `[AudioChunkStorage] Added ${silenceDuration}ms silence gap (${silenceData.byteLength} bytes)`
+          );
         }
 
         // Add the audio chunk
@@ -476,9 +488,11 @@ export class AudioChunkStorageService {
         (sum, segment) => sum + segment.byteLength,
         0
       );
-      
-      console.log(`[AudioChunkStorage] Merging ${mergedSegments.length} segments (${silenceSegmentsAdded} silence segments) into ${totalSize} bytes`);
-      
+
+      console.log(
+        `[AudioChunkStorage] Merging ${mergedSegments.length} segments (${silenceSegmentsAdded} silence segments) into ${totalSize} bytes`
+      );
+
       const merged = new Uint8Array(totalSize);
       let offset = 0;
 
@@ -487,10 +501,15 @@ export class AudioChunkStorageService {
         offset += segment.byteLength;
       }
 
-      console.log(`[AudioChunkStorage] Successfully merged audio for session ${baseSessionId}: ${merged.byteLength} bytes`);
+      console.log(
+        `[AudioChunkStorage] Successfully merged audio for session ${baseSessionId}: ${merged.byteLength} bytes`
+      );
       return merged;
     } catch (error) {
-      console.error(`[AudioChunkStorage] Error merging audio for session ${baseSessionId}:`, error);
+      console.error(
+        `[AudioChunkStorage] Error merging audio for session ${baseSessionId}:`,
+        error
+      );
       throw new Error(
         `Failed to merge synchronized audio for session ${baseSessionId}: ${
           error instanceof Error ? error.message : 'Unknown error'
