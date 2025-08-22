@@ -5,6 +5,8 @@
  * with proper error handling and type safety.
  */
 
+import { audioIndexedDBStorage } from './indexeddb-storage';
+
 export interface AudioChunk {
   id: string;
   sessionId: string;
@@ -50,6 +52,7 @@ export interface AudioSession {
 export class AudioChunkStorageService {
   private static readonly STORAGE_KEY = 'audio_chunks';
   private static readonly METADATA_KEY = 'audio_chunks_metadata';
+  private storage = audioIndexedDBStorage;
 
   /**
    * Adds an audio chunk to local storage
@@ -75,7 +78,7 @@ export class AudioChunkStorageService {
     try {
       const chunkId = this.generateUniqueId();
       const timestamp = Date.now();
-      const metadata = this.getMetadata();
+      const metadata = await this.getMetadata();
       const index = metadata.nextIndex;
 
       // Convert audio data to base64 for storage
@@ -124,13 +127,13 @@ export class AudioChunkStorageService {
 
       // Store the chunk
       const storageKey = `${AudioChunkStorageService.STORAGE_KEY}_${chunkId}`;
-      localStorage.setItem(storageKey, JSON.stringify(chunk));
+      await this.storage.setItem(storageKey, JSON.stringify(chunk));
 
       // Update metadata
       metadata.chunkIds.push(chunkId);
       metadata.nextIndex += 1;
       metadata.lastUpdated = timestamp;
-      this.saveMetadata(metadata);
+      await this.saveMetadata(metadata);
 
       return chunkId;
     } catch (error) {
@@ -149,7 +152,7 @@ export class AudioChunkStorageService {
    */
   public async getAudioChunks(): Promise<AudioChunk[]> {
     try {
-      const metadata = this.getMetadata();
+      const metadata = await this.getMetadata();
 
       if (metadata.chunkIds.length === 0) {
         return [];
@@ -161,7 +164,7 @@ export class AudioChunkStorageService {
       for (const chunkId of metadata.chunkIds) {
         try {
           const storageKey = `${AudioChunkStorageService.STORAGE_KEY}_${chunkId}`;
-          const storedData = localStorage.getItem(storageKey);
+          const storedData = await this.storage.getItem(storageKey);
 
           if (!storedData) {
             invalidChunkIds.push(chunkId);
@@ -197,8 +200,8 @@ export class AudioChunkStorageService {
 
       // Clean up invalid chunk references
       if (invalidChunkIds.length > 0) {
-        this.cleanupInvalidChunks(invalidChunkIds);
-      }
+      await this.cleanupInvalidChunks(invalidChunkIds);
+    }
 
       // Sort chunks by index to ensure correct playback order
       return chunks.sort((a, b) => a.index - b.index);
@@ -215,18 +218,18 @@ export class AudioChunkStorageService {
    * Clears all stored audio chunks
    * @throws Error if clear operation fails
    */
-  public clearAllChunks(): void {
+  public async clearAllChunks(): Promise<void> {
     try {
-      const metadata = this.getMetadata();
+      const metadata = await this.getMetadata();
 
       // Remove all chunk data
       for (const chunkId of metadata.chunkIds) {
         const storageKey = `${AudioChunkStorageService.STORAGE_KEY}_${chunkId}`;
-        localStorage.removeItem(storageKey);
+        await this.storage.removeItem(storageKey);
       }
 
       // Reset metadata
-      this.saveMetadata({
+      await this.saveMetadata({
         chunkIds: [],
         nextIndex: 0,
         lastUpdated: Date.now(),
@@ -244,9 +247,9 @@ export class AudioChunkStorageService {
    * Gets the total number of stored chunks
    * @returns Number of stored chunks
    */
-  public getChunkCount(): number {
+  public async getChunkCount(): Promise<number> {
     try {
-      const metadata = this.getMetadata();
+      const metadata = await this.getMetadata();
       return metadata.chunkIds.length;
     } catch (error) {
       console.warn('Failed to get chunk count:', error);
@@ -596,19 +599,19 @@ export class AudioChunkStorageService {
    */
   public async deleteSession(sessionId: string): Promise<void> {
     try {
-      const metadata = this.getMetadata();
+      const metadata = await this.getMetadata();
       const chunksToDelete: string[] = [];
 
       // Find chunks belonging to this session
       for (const chunkId of metadata.chunkIds) {
         try {
           const storageKey = `${AudioChunkStorageService.STORAGE_KEY}_${chunkId}`;
-          const storedData = localStorage.getItem(storageKey);
+          const storedData = await this.storage.getItem(storageKey);
           if (storedData) {
             const chunk: SerializedAudioChunk = JSON.parse(storedData);
             if (chunk.sessionId === sessionId) {
               chunksToDelete.push(chunkId);
-              localStorage.removeItem(storageKey);
+              await this.storage.removeItem(storageKey);
             }
           }
         } catch (error) {
@@ -621,7 +624,7 @@ export class AudioChunkStorageService {
         id => !chunksToDelete.includes(id)
       );
       metadata.lastUpdated = Date.now();
-      this.saveMetadata(metadata);
+      await this.saveMetadata(metadata);
     } catch (error) {
       throw new Error(
         `Failed to delete session ${sessionId}: ${
@@ -632,16 +635,17 @@ export class AudioChunkStorageService {
   }
 
   /**
-   * Checks if local storage is available and has sufficient space
-   * @returns True if storage is available, false otherwise
+   * Checks if IndexedDB storage is available and has sufficient space
+   * @returns Promise that resolves to true if storage is available, false otherwise
    */
-  public isStorageAvailable(): boolean {
+  public async isStorageAvailable(): Promise<boolean> {
     try {
-      const testKey = 'audio_storage_test';
-      localStorage.setItem(testKey, 'test');
-      localStorage.removeItem(testKey);
+      const testKey = 'test_storage_availability';
+      await this.storage.setItem(testKey, 'test');
+      await this.storage.removeItem(testKey);
       return true;
     } catch (error) {
+      console.warn('Storage not available:', error);
       return false;
     }
   }
@@ -671,9 +675,9 @@ export class AudioChunkStorageService {
     return bytes;
   }
 
-  private getMetadata(): AudioChunkMetadata {
+  private async getMetadata(): Promise<AudioChunkMetadata> {
     try {
-      const stored = localStorage.getItem(
+      const stored = await this.storage.getItem(
         AudioChunkStorageService.METADATA_KEY
       );
       if (!stored) {
@@ -694,21 +698,21 @@ export class AudioChunkStorageService {
     }
   }
 
-  private saveMetadata(metadata: AudioChunkMetadata): void {
-    localStorage.setItem(
+  private async saveMetadata(metadata: AudioChunkMetadata): Promise<void> {
+    await this.storage.setItem(
       AudioChunkStorageService.METADATA_KEY,
       JSON.stringify(metadata)
     );
   }
 
-  private cleanupInvalidChunks(invalidChunkIds: string[]): void {
+  private async cleanupInvalidChunks(invalidChunkIds: string[]): Promise<void> {
     try {
-      const metadata = this.getMetadata();
+      const metadata = await this.getMetadata();
       metadata.chunkIds = metadata.chunkIds.filter(
-        id => !invalidChunkIds.includes(id)
+        (id: string) => !invalidChunkIds.includes(id)
       );
       metadata.lastUpdated = Date.now();
-      this.saveMetadata(metadata);
+      await this.saveMetadata(metadata);
     } catch (error) {
       console.warn('Failed to cleanup invalid chunks:', error);
     }

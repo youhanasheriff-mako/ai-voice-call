@@ -334,10 +334,10 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
                   `Saved AI audio chunk ${this._aiAudioIndex} at ${relativeTime}ms for session ${this._sessionId}`
                 );
               } catch (error) {
-                console.warn('Failed to save AI audio chunk:', error);
+                console.error('Failed to save AI audio chunk to IndexedDB:', error);
                 this.log(
                   'storage.error',
-                  `Failed to save audio chunk: ${
+                  `Failed to save AI audio chunk to IndexedDB: ${
                     error instanceof Error ? error.message : 'Unknown error'
                   }`
                 );
