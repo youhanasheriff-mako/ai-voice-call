@@ -15,7 +15,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { GenAILiveClient } from '../genai-live-client';
+import { GenAILiveClient } from '../lib/genai-live-client';
 import { LiveClientOptions } from '../types';
 import { AudioStreamer } from '../lib/audio-streamer';
 import { audioContext } from '../lib/utils';

@@ -17,9 +17,9 @@
 import React, { useState } from 'react';
 import './App.scss';
 import { LiveAPIProvider } from './module/contexts/LiveAPIContext';
-import { SalesConsultant } from './module/SalesConsultant';
-import { FloatingFeature } from './module/floating-feature';
-import { AudioModal } from './module/audio-modal/AudioModal';
+import { SalesConsultant } from './module/components/SalesConsultant';
+import { FloatingFeature } from './module/audio/floating-feature';
+import { AudioModal } from './module/audio/audio-modal/AudioModal';
 import { AudioLines } from 'lucide-react';
 import { LiveClientOptions } from './types';
 

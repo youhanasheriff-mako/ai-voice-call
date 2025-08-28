@@ -3,7 +3,7 @@ import {
   audioChunkStorage,
   AudioSession,
   AudioChunk,
-} from '../lib/audio-chunk-storage';
+} from '../../lib/audio-chunk-storage';
 import { Play, Pause, Square, Volume2, X, Loader2, CheckCircle, Link } from 'lucide-react';
 import './AudioModal.scss';
 
