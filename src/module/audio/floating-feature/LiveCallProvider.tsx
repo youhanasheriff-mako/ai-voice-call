@@ -19,23 +19,10 @@ import { LiveClientOptions } from '../../types';
 import { audioChunkStorage } from '../../lib/audio-chunk-storage';
 import { audioIndexedDBStorage } from '../../lib/indexeddb-storage';
 import { AudioRecorder } from '../../lib/audio-recorder';
-import { systemPrompt } from '../../constants';
+import { systemPrompt, geminiApiKey } from '../../constants';
 import { FunctionDeclaration, Type } from '@google/genai';
 
-const API_KEY = process.env.REACT_APP_GEMINI_API_KEY as string;
-
 // Validate API key
-if (!API_KEY || API_KEY === 'your_api_key_here') {
-  console.error('❌ Gemini API key is missing or not configured properly.');
-  console.log('📝 To fix this:');
-  console.log(
-    '1. Get your free API key from: https://aistudio.google.com/apikey'
-  );
-  console.log(
-    '2. Add it to the .env file: REACT_APP_GEMINI_API_KEY=your_actual_api_key'
-  );
-  console.log('3. Restart the development server');
-}
 
 export const endCallDeclaration: FunctionDeclaration = {
   name: 'end_call',
@@ -106,7 +93,7 @@ export interface LiveCallProviderProps {
 }
 
 const apiOptions: LiveClientOptions = {
-  apiKey: API_KEY,
+  apiKey: geminiApiKey,
 };
 
 export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
@@ -389,16 +376,6 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
       setCallError(null);
       setIsRecovering(false);
       console.log('✅ Call state reset completed');
-
-      // Check API key before attempting connection
-      if (!API_KEY || API_KEY === 'your_api_key_here') {
-        const errorMsg =
-          'API key not configured. Please add your Gemini API key to the .env file.';
-        console.error('❌ API key validation failed:', errorMsg);
-        setCallError(errorMsg);
-        throw new Error(errorMsg);
-      }
-      console.log('✅ API key validation passed');
 
       // Configure the live API for voice calls with performance optimizations
       console.log('🔧 Configuring live API model and settings...');

@@ -22,14 +22,10 @@ import { FloatingFeature } from './module/audio/floating-feature';
 import { AudioModal } from './module/audio/audio-modal/AudioModal';
 import { AudioLines } from 'lucide-react';
 import { LiveClientOptions } from './types';
-
-const API_KEY = process.env.REACT_APP_GEMINI_API_KEY as string;
-if (typeof API_KEY !== 'string') {
-  throw new Error('set REACT_APP_GEMINI_API_KEY in .env');
-}
+import { geminiApiKey } from './module/constants';
 
 const apiOptions: LiveClientOptions = {
-  apiKey: API_KEY,
+  apiKey: geminiApiKey,
 };
 
 function App() {
