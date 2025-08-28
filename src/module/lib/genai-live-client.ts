@@ -367,10 +367,18 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
    * send realtimeInput, this is base64 chunks of "audio/pcm" and/or "image/jpg"
    */
   sendRealtimeInput(chunks: Array<{ mimeType: string; data: string }>) {
+    // Check WebSocket connection state before sending data
+    if (this._status !== 'connected' || !this.session) {
+      console.error("WebSocket is not open. Cannot send message.");
+      // Optionally, you can implement a reconnect logic here
+      // or queue the message to be sent once the connection is re-established.
+      return;
+    }
+
     let hasAudio = false;
     let hasVideo = false;
     for (const ch of chunks) {
-      this.session?.sendRealtimeInput({ media: ch });
+      this.session.sendRealtimeInput({ media: ch });
 
       // Save user audio chunks to storage
       if (ch.mimeType.includes('audio') && this._sessionId) {
@@ -441,11 +449,19 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
    *  send a response to a function call and provide the id of the functions you are responding to
    */
   sendToolResponse(toolResponse: LiveClientToolResponse) {
+    // Check WebSocket connection state before sending data
+    if (this._status !== 'connected' || !this.session) {
+      console.error("WebSocket is not open. Cannot send message.");
+      // Optionally, you can implement a reconnect logic here
+      // or queue the message to be sent once the connection is re-established.
+      return;
+    }
+
     if (
       toolResponse.functionResponses &&
       toolResponse.functionResponses.length
     ) {
-      this.session?.sendToolResponse({
+      this.session.sendToolResponse({
         functionResponses: toolResponse.functionResponses,
       });
       this.log(`client.toolResponse`, toolResponse);
@@ -456,7 +472,15 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
    * send normal content parts such as { text }
    */
   send(parts: Part | Part[], turnComplete: boolean = true) {
-    this.session?.sendClientContent({ turns: parts, turnComplete });
+    // Check WebSocket connection state before sending data
+    if (this._status !== 'connected' || !this.session) {
+      console.error("WebSocket is not open. Cannot send message.");
+      // Optionally, you can implement a reconnect logic here
+      // or queue the message to be sent once the connection is re-established.
+      return;
+    }
+
+    this.session.sendClientContent({ turns: parts, turnComplete });
     this.log(`client.send`, {
       turns: Array.isArray(parts) ? parts : [parts],
       turnComplete,
