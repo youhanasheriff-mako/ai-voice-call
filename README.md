@@ -7,10 +7,6 @@
 
 A sophisticated React-based web application that enables real-time voice conversations with AI using Google's Gemini Live API. This application provides a seamless interface for multimodal AI interactions, supporting voice input/output, screen sharing, and advanced conversation management.
 
-[![Live API Demo](readme/thumbnail.png)](https://www.youtube.com/watch?v=J_q7JY1XxFE)
-
-🎥 **[Watch the Live Demo](https://www.youtube.com/watch?v=J_q7JY1XxFE)**
-
 ## ✨ Features
 
 - 🎤 **Real-time Voice Conversations**: Natural voice interactions with AI using WebSocket connections
@@ -37,12 +33,14 @@ Before you begin, ensure you have the following installed:
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/youhanasheriff-mako/ai-voice-call.git
    cd ai-voice-call
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    # or
@@ -50,13 +48,15 @@ Before you begin, ensure you have the following installed:
    ```
 
 3. **Configure environment variables**
-   
+
    Create a `.env.local` file in the root directory:
+
    ```bash
    cp .env.example .env.local
    ```
-   
+
    Edit `.env.local` and add your Gemini API key:
+
    ```env
    # Gemini API Key
    # Get your free API key from: https://aistudio.google.com/apikey
@@ -64,6 +64,7 @@ Before you begin, ensure you have the following installed:
    ```
 
 4. **Start the development server**
+
    ```bash
    npm start
    # or
@@ -71,23 +72,23 @@ Before you begin, ensure you have the following installed:
    ```
 
 5. **Open your browser**
-   
+
    Navigate to [http://localhost:3000](http://localhost:3000) to view the application.
 
 ### 🔧 Configuration
 
 #### Environment Variables
 
-| Variable | Description | Required | Default |
-|----------|-------------|----------|---------|
-| `REACT_APP_GEMINI_API_KEY` | Your Gemini API key for accessing the Live API | ✅ Yes | - |
+| Variable                   | Description                                    | Required | Default |
+| -------------------------- | ---------------------------------------------- | -------- | ------- |
+| `REACT_APP_GEMINI_API_KEY` | Your Gemini API key for accessing the Live API | ✅ Yes   | -       |
 
 #### Voice Options
 
 The application supports multiple AI voice personalities:
 
 - **Puck**: Playful and energetic
-- **Charon**: Deep and authoritative  
+- **Charon**: Deep and authoritative
 - **Kore**: Warm and friendly
 - **Fenrir**: Bold and confident
 - **Aoede**: Melodic and expressive
@@ -111,13 +112,14 @@ For optimal functionality, grant the following permissions when prompted:
 ### Advanced Features
 
 #### Screen Sharing Integration
+
 ```typescript
 // Enable screen sharing for enhanced AI context
 const startScreenShare = async () => {
   try {
     const stream = await navigator.mediaDevices.getDisplayMedia({
       video: true,
-      audio: true
+      audio: true,
     });
     // Stream is now available for AI processing
   } catch (error) {
@@ -127,6 +129,7 @@ const startScreenShare = async () => {
 ```
 
 #### Custom Function Declarations
+
 ```typescript
 import { type FunctionDeclaration, SchemaType } from '@google/generative-ai';
 
@@ -139,11 +142,11 @@ export const customFunction: FunctionDeclaration = {
     properties: {
       data: {
         type: SchemaType.STRING,
-        description: 'Raw data to process'
-      }
+        description: 'Raw data to process',
+      },
     },
-    required: ['data']
-  }
+    required: ['data'],
+  },
 };
 ```
 
@@ -190,13 +193,13 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ### Available Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm start` | Runs the app in development mode at [http://localhost:3000](http://localhost:3000) |
-| `npm run start-https` | Starts the development server with HTTPS enabled |
-| `npm run build` | Builds the app for production to the `build` folder |
-| `npm test` | Launches the test runner in interactive watch mode |
-| `npm run eject` | **Note: This is a one-way operation!** Removes Create React App abstraction |
+| Command               | Description                                                                        |
+| --------------------- | ---------------------------------------------------------------------------------- |
+| `npm start`           | Runs the app in development mode at [http://localhost:3000](http://localhost:3000) |
+| `npm run start-https` | Starts the development server with HTTPS enabled                                   |
+| `npm run build`       | Builds the app for production to the `build` folder                                |
+| `npm test`            | Launches the test runner in interactive watch mode                                 |
+| `npm run eject`       | **Note: This is a one-way operation!** Removes Create React App abstraction        |
 
 ### 🛠️ Built With
 
