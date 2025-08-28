@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import {
-  FiPhone,
-  FiPhoneCall,
-  FiX,
-  FiMinus,
-  FiMaximize2,
-} from 'react-icons/fi';
+  Phone,
+  PhoneCall,
+  X,
+  Minus,
+  Maximize2,
+} from 'lucide-react';
 import { LiveAPIProvider } from '../contexts/LiveAPIContext';
 import { AIVoiceCallPluginProps, PluginState } from '../types';
 import { AvatarVideo } from './AvatarVideo';
@@ -38,16 +38,35 @@ const AIVoiceCallPlugin: React.FC<AIVoiceCallPluginProps> = ({
     ...options,
   };
 
-  // Handle escape key to close overlay
+  // Handle keyboard navigation and accessibility
   useEffect(() => {
-    const handleEscape = (event: KeyboardEvent) => {
+    const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && pluginState.isOpen) {
         handleClose();
       }
+
+      // Tab trapping within overlay when open
+      if (event.key === 'Tab' && pluginState.isOpen && overlayRef.current) {
+        const focusableElements = overlayRef.current.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        const firstElement = focusableElements[0] as HTMLElement;
+        const lastElement = focusableElements[
+          focusableElements.length - 1
+        ] as HTMLElement;
+
+        if (event.shiftKey && document.activeElement === firstElement) {
+          event.preventDefault();
+          lastElement?.focus();
+        } else if (!event.shiftKey && document.activeElement === lastElement) {
+          event.preventDefault();
+          firstElement?.focus();
+        }
+      }
     };
 
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, [pluginState.isOpen]);
 
   // Handle click outside to close overlay
@@ -70,11 +89,22 @@ const AIVoiceCallPlugin: React.FC<AIVoiceCallPluginProps> = ({
   const handleOpen = useCallback(() => {
     setPluginState(prev => ({ ...prev, isOpen: true, isMinimized: false }));
     onOpen?.();
+    
+    // Focus first focusable element in overlay after it opens
+    setTimeout(() => {
+      const firstFocusable = overlayRef.current?.querySelector(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      ) as HTMLElement;
+      firstFocusable?.focus();
+    }, 100);
   }, [onOpen]);
 
   const handleClose = useCallback(() => {
     setPluginState(prev => ({ ...prev, isOpen: false, isMinimized: false }));
     onClose?.();
+    
+    // Return focus to the floating button
+    buttonRef.current?.focus();
   }, [onClose]);
 
   const handleMinimize = useCallback(() => {
@@ -109,23 +139,23 @@ const AIVoiceCallPlugin: React.FC<AIVoiceCallPluginProps> = ({
   const FloatingButton = () => (
     <button
       ref={buttonRef}
-      className={`ai-voice-plugin__button ${
-        pluginState.isConnected ? 'ai-voice-plugin__button--active' : ''
+      className={`ai-voice-plugin__floating-button ${
+        pluginState.isConnected ? 'ai-voice-plugin__floating-button--connected' : ''
       }`}
       onClick={handleOpen}
       style={{
-        backgroundColor: theme.primaryColor || '#007bff',
+        backgroundColor: theme.primaryColor || undefined,
       }}
       aria-label="Open AI Voice Call"
       aria-expanded={pluginState.isOpen}
     >
       {pluginState.isConnected ? (
-        <FiPhoneCall className="ai-voice-plugin__button-icon" />
+        <PhoneCall className="ai-voice-plugin__floating-button-icon" />
       ) : (
-        <FiPhone className="ai-voice-plugin__button-icon" />
+        <Phone className="ai-voice-plugin__floating-button-icon" />
       )}
       {pluginState.isConnected && (
-        <div className="ai-voice-plugin__button-pulse" />
+        <div className="ai-voice-plugin__floating-button-pulse" />
       )}
     </button>
   );
@@ -153,14 +183,14 @@ const AIVoiceCallPlugin: React.FC<AIVoiceCallPluginProps> = ({
             onClick={handleMinimize}
             aria-label={pluginState.isMinimized ? 'Maximize' : 'Minimize'}
           >
-            {pluginState.isMinimized ? <FiMaximize2 /> : <FiMinus />}
+            {pluginState.isMinimized ? <Maximize2 /> : <Minus />}
           </button>
           <button
             className="ai-voice-plugin__control-btn ai-voice-plugin__control-btn--close"
             onClick={handleClose}
             aria-label="Close"
           >
-            <FiX />
+            <X />
           </button>
         </div>
       </div>
@@ -195,7 +225,15 @@ const AIVoiceCallPlugin: React.FC<AIVoiceCallPluginProps> = ({
       {/* Overlay Portal */}
       {pluginState.isOpen &&
         createPortal(
-          <div className="ai-voice-plugin__backdrop">
+          <div 
+            className="ai-voice-plugin__backdrop"
+            role="presentation"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                handleClose();
+              }
+            }}
+          >
             <OverlayContent />
           </div>,
           document.body

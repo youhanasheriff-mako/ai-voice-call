@@ -22,6 +22,9 @@ import { SalesConsultant } from './components/altair/SalesConsultant';
 import ControlTray from './components/control-tray/ControlTray';
 import cn from 'classnames';
 import { LiveClientOptions } from './types';
+// Import the AI Voice Call Plugin for testing
+import { AIVoiceCallPlugin } from '@ai-voice-call/react-plugin';
+import './plugin-styles/index.scss';
 
 const API_KEY = process.env.REACT_APP_GEMINI_API_KEY as string;
 if (typeof API_KEY !== 'string') {
@@ -305,6 +308,21 @@ function App() {
           </main>
         </div>
       </LiveAPIProvider>
+      
+      {/* AI Voice Call Plugin for testing */}
+      <AIVoiceCallPlugin
+        apiKey={API_KEY}
+        position="bottom-right"
+        theme={{
+          primaryColor: '#007bff',
+          backgroundColor: '#ffffff',
+          textColor: '#333333'
+        }}
+        onOpen={() => console.log('Plugin opened')}
+        onClose={() => console.log('Plugin closed')}
+        onCallStart={() => console.log('Call started')}
+        onCallEnd={() => console.log('Call ended')}
+      />
     </div>
   );
 }

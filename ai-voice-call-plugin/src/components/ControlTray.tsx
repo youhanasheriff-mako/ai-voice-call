@@ -37,19 +37,31 @@ type MediaStreamButtonProps = {
   offIcon: string;
   start: () => Promise<any>;
   stop: () => any;
+  ariaLabel: string;
+  ariaLabelActive?: string;
 };
 
 /**
  * button used for triggering webcam or screen-capture
  */
 const MediaStreamButton = memo(
-  ({ isStreaming, onIcon, offIcon, start, stop }: MediaStreamButtonProps) =>
+  ({ isStreaming, onIcon, offIcon, start, stop, ariaLabel, ariaLabelActive }: MediaStreamButtonProps) =>
     isStreaming ? (
-      <button className="ai-voice-plugin__action-button" onClick={stop}>
+      <button 
+        className="ai-voice-plugin__action-button" 
+        onClick={stop}
+        aria-label={ariaLabelActive || ariaLabel}
+        aria-pressed={isStreaming}
+      >
         <span className="material-symbols-outlined">{onIcon}</span>
       </button>
     ) : (
-      <button className="ai-voice-plugin__action-button" onClick={start}>
+      <button 
+        className="ai-voice-plugin__action-button" 
+        onClick={start}
+        aria-label={ariaLabel}
+        aria-pressed={isStreaming}
+      >
         <span className="material-symbols-outlined">{offIcon}</span>
       </button>
     )
@@ -181,6 +193,8 @@ export const ControlTray: React.FC<ControlTrayProps> = ({
         <button
           className={classNames("ai-voice-plugin__action-button", "ai-voice-plugin__mic-button")}
           onClick={() => setMuted(!muted)}
+          aria-label={muted ? "Unmute microphone" : "Mute microphone"}
+          aria-pressed={!muted}
         >
           {!muted ? (
             <span className="material-symbols-outlined filled">mic</span>
@@ -201,6 +215,8 @@ export const ControlTray: React.FC<ControlTrayProps> = ({
               stop={changeStreams()}
               onIcon="cancel_presentation"
               offIcon="present_to_all"
+              ariaLabel="Start screen sharing"
+              ariaLabelActive="Stop screen sharing"
             />
             <MediaStreamButton
               isStreaming={webcam.isStreaming}
@@ -208,6 +224,8 @@ export const ControlTray: React.FC<ControlTrayProps> = ({
               stop={changeStreams()}
               onIcon="videocam_off"
               offIcon="videocam"
+              ariaLabel="Start camera"
+              ariaLabelActive="Stop camera"
             />
           </>
         )}
