@@ -1,6 +1,5 @@
 # AI Voice Call 🎙️
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![React](https://img.shields.io/badge/React-18.3.1-blue.svg)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6.3-blue.svg)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-16%2B-green.svg)](https://nodejs.org/)
@@ -266,20 +265,6 @@ We welcome contributions from the community! Please follow these guidelines:
 - **Commit Messages**: Use clear, descriptive commit messages
 - **Issue First**: For major changes, please open an issue first to discuss
 
-### Code of Conduct
-
-This project follows [Google's Open Source Community Guidelines](https://opensource.google/conduct/). Please be respectful and inclusive in all interactions.
-
-### Contributor License Agreement
-
-Contributions to this project must be accompanied by a [Contributor License Agreement](https://cla.developers.google.com/about) (CLA). Visit [https://cla.developers.google.com/](https://cla.developers.google.com/) to see your current agreements or to sign a new one.
-
-## 🐛 Issues and Support
-
-- **Bug Reports**: [Create an issue](https://github.com/youhanasheriff-mako/ai-voice-call/issues) with detailed reproduction steps
-- **Feature Requests**: [Open a discussion](https://github.com/youhanasheriff-mako/ai-voice-call/discussions) to propose new features
-- **Questions**: Check existing [discussions](https://github.com/youhanasheriff-mako/ai-voice-call/discussions) or start a new one
-
 ## 📚 Resources
 
 - **[Gemini API Documentation](https://ai.google.dev/api/multimodal-live)** - Official API documentation
@@ -294,26 +279,6 @@ Contributions to this project must be accompanied by a [Contributor License Agre
 - **HTTPS**: Use HTTPS in production environments
 - **Permissions**: Only request necessary browser permissions
 
-## 📄 License
-
-This project is licensed under the **Apache License 2.0** - see the [LICENSE](LICENSE) file for details.
-
-```
-Copyright 2024 AI Voice Call Contributors
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-```
-
 ## 🙏 Acknowledgments
 
 - **Google Gemini Team** for the powerful Live API
@@ -327,7 +292,6 @@ This is an experimental project showcasing the Gemini Live API capabilities. Whi
 - This is **not an official Google product**
 - Use in production environments at your own discretion
 - API usage may incur costs based on your Gemini API plan
-- Respect copyright and trademark rights when using this software
 
 For more information about Google's policies, visit [Google's Site Policies](https://developers.google.com/terms/site-policies).
 
