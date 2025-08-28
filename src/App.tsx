@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import './App.scss';
-import {
-  LiveAPIProvider,
-} from './module/contexts/LiveAPIContext';
+import { LiveAPIProvider } from './module/contexts/LiveAPIContext';
 import { SalesConsultant } from './module/SalesConsultant';
 import { FloatingFeature } from './module/floating-feature';
+import { AudioModal } from './module/audio-modal/AudioModal';
+import { AudioLines } from 'lucide-react';
 import { LiveClientOptions } from './types';
 
 const API_KEY = process.env.REACT_APP_GEMINI_API_KEY as string;
@@ -33,6 +33,16 @@ const apiOptions: LiveClientOptions = {
 };
 
 function App() {
+  const [isAudioModalOpen, setIsAudioModalOpen] = useState(false);
+
+  const handleOpenAudioModal = () => {
+    setIsAudioModalOpen(true);
+  };
+
+  const handleCloseAudioModal = () => {
+    setIsAudioModalOpen(false);
+  };
+
   return (
     <div className="App">
       <LiveAPIProvider options={apiOptions}>
@@ -41,12 +51,21 @@ function App() {
             <h1 className="sales-ai-title">Sales AI</h1>
           </header>
           <main className="home-content">
+            <button
+              className="audio-button"
+              onClick={handleOpenAudioModal}
+              aria-label="Open Audio Controls"
+            >
+              <AudioLines size={24} />
+            </button>
             <SalesConsultant />
           </main>
         </div>
       </LiveAPIProvider>
-      
+
       <FloatingFeature />
+
+      <AudioModal isOpen={isAudioModalOpen} onClose={handleCloseAudioModal} />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import {
   AudioSession,
   AudioChunk,
 } from '../lib/audio-chunk-storage';
+import { Play, Pause, Square, Volume2, X, Loader2, CheckCircle, Link } from 'lucide-react';
 import './AudioModal.scss';
 
 export interface AudioModalProps {
@@ -397,7 +398,7 @@ export const AudioModal: React.FC<AudioModalProps> = ({
         <div className="audio-modal__header">
           <h2>Audio Session Player</h2>
           <button className="audio-modal__close" onClick={onClose}>
-            ×
+            <X size={24} />
           </button>
         </div>
 
@@ -522,7 +523,11 @@ export const AudioModal: React.FC<AudioModalProps> = ({
                     onClick={playbackState.isPlaying ? pause : play}
                     disabled={!audioBufferRef.current}
                   >
-                    {playbackState.isPlaying ? '⏸️' : '▶️'}
+                    {playbackState.isPlaying ? (
+                      <Pause size={20} />
+                    ) : (
+                      <Play size={20} />
+                    )}
                   </button>
 
                   <button
@@ -532,11 +537,11 @@ export const AudioModal: React.FC<AudioModalProps> = ({
                       !playbackState.isPlaying && !playbackState.isPaused
                     }
                   >
-                    ⏹️
+                    <Square size={20} />
                   </button>
 
                   <div className="volume-control">
-                    <span>🔊</span>
+                    <Volume2 size={20} />
                     <input
                       type="range"
                       min="0"
@@ -560,13 +565,17 @@ export const AudioModal: React.FC<AudioModalProps> = ({
                     >
                       {isMerging ? (
                         <>
-                          <div className="spinner-small"></div>
+                          <Loader2 size={16} className="animate-spin" />
                           Merging...
                         </>
                       ) : isMerged ? (
-                        <>✅ Merged & Saved</>
+                        <>
+                          <CheckCircle size={16} /> Merged & Saved
+                        </>
                       ) : (
-                        <>🔗 Merge & Save Audio</>
+                        <>
+                          <Link size={16} /> Merge & Save Audio
+                        </>
                       )}
                     </button>
                     {isMerged && (

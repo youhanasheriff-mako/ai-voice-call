@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './VideoCallInterface.scss';
 import { LiveCallProvider, useLiveCall } from './LiveCallProvider';
-import { Mic, MicOff, Phone, Volume2 } from 'lucide-react';
+import { Mic, MicOff, Phone, Volume2, MicIcon, AlertCircle, AlertTriangle } from 'lucide-react';
 
 interface VideoCallInterfaceProps {
   onClose: () => void;
@@ -101,7 +101,7 @@ const VideoCallInterfaceContent: React.FC<VideoCallInterfaceProps> = ({
       <div className="video-area">
         {callError ? (
           <div className="error-display">
-            <div className="error-icon">⚠️</div>
+            <div className="error-icon"><AlertTriangle size={20} /></div>
             <div className="error-message">{callError}</div>
             <div className="error-instructions">
               <p>To fix this:</p>
@@ -162,12 +162,12 @@ const VideoCallInterfaceContent: React.FC<VideoCallInterfaceProps> = ({
           <div className="mic-permission-status">
             {microphonePermission === 'checking' && (
               <div className="permission-checking">
-                🎤 Requesting microphone access...
+                <MicIcon size={16} /> Requesting microphone access...
               </div>
             )}
             {microphonePermission === 'denied' && (
               <div className="permission-denied">
-                🚫 Microphone access denied
+                <AlertCircle size={16} /> Microphone access denied
               </div>
             )}
             {microphoneError && (
