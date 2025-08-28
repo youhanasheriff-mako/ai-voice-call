@@ -3,4 +3,4 @@ export const systemPrompt =
 
 export const geminiApiKey =
   (process.env.REACT_APP_GEMINI_API_KEY as string | null) ??
-  'AIzaSyBklGlHvdJp4qQnwFMAZRctLWBo6bMwR-k';
+  '***';
