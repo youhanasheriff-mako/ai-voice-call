@@ -22,7 +22,7 @@ import { SalesConsultant } from './components/altair/SalesConsultant';
 import ControlTray from './components/control-tray/ControlTray';
 import cn from 'classnames';
 import { LiveClientOptions } from './types';
-import { FloatingFeature } from './components/floating-feature';
+import { FloatingFeature } from './module/floating-feature';
 
 const API_KEY = process.env.REACT_APP_GEMINI_API_KEY as string;
 if (typeof API_KEY !== 'string') {
