@@ -15,6 +15,7 @@
  */
 import { useEffect, memo } from 'react';
 import { useLiveAPIContext } from './contexts/LiveAPIContext';
+import './SalesConsultant.scss';
 import {
   FunctionDeclaration,
   LiveServerToolCall,
