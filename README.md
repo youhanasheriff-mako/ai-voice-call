@@ -232,39 +232,6 @@ npm run build
 # Deploy the contents of the build folder to your hosting provider
 ```
 
-## 🤝 Contributing
-
-We welcome contributions from the community! Please follow these guidelines:
-
-### Getting Started
-
-1. **Fork the repository** on GitHub
-2. **Clone your fork** locally:
-   ```bash
-   git clone https://github.com/your-username/ai-voice-call.git
-   ```
-3. **Create a feature branch**:
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-4. **Make your changes** and commit them:
-   ```bash
-   git commit -m "Add your descriptive commit message"
-   ```
-5. **Push to your fork**:
-   ```bash
-   git push origin feature/your-feature-name
-   ```
-6. **Create a Pull Request** on GitHub
-
-### Contribution Guidelines
-
-- **Code Style**: Follow the existing code style and use TypeScript
-- **Testing**: Add tests for new features and ensure existing tests pass
-- **Documentation**: Update documentation for any new features or changes
-- **Commit Messages**: Use clear, descriptive commit messages
-- **Issue First**: For major changes, please open an issue first to discuss
-
 ## 📚 Resources
 
 - **[Gemini API Documentation](https://ai.google.dev/api/multimodal-live)** - Official API documentation
@@ -278,22 +245,6 @@ We welcome contributions from the community! Please follow these guidelines:
 - **Environment Variables**: Use `.env.local` for sensitive configuration
 - **HTTPS**: Use HTTPS in production environments
 - **Permissions**: Only request necessary browser permissions
-
-## 🙏 Acknowledgments
-
-- **Google Gemini Team** for the powerful Live API
-- **React Community** for the excellent ecosystem
-- **Open Source Contributors** who make projects like this possible
-
-## ⚠️ Disclaimer
-
-This is an experimental project showcasing the Gemini Live API capabilities. While we strive to maintain and support this project, please note:
-
-- This is **not an official Google product**
-- Use in production environments at your own discretion
-- API usage may incur costs based on your Gemini API plan
-
-For more information about Google's policies, visit [Google's Site Policies](https://developers.google.com/terms/site-policies).
 
 ---
 
