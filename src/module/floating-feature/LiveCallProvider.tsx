@@ -390,7 +390,7 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
         speechConfig: {
           voiceConfig: {
             prebuiltVoiceConfig: {
-              voiceName: 'Aoede',
+              voiceName: 'Fenrir',
             },
           },
         },

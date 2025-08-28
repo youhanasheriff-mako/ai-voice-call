@@ -3,7 +3,7 @@ import {
   audioChunkStorage,
   AudioSession,
   AudioChunk,
-} from '../../lib/audio-chunk-storage';
+} from '../lib/audio-chunk-storage';
 import './AudioModal.scss';
 
 export interface AudioModalProps {

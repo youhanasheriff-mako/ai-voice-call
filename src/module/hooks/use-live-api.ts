@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { GenAILiveClient } from "../lib/genai-live-client";
-import { LiveClientOptions } from "../types";
-import { AudioStreamer } from "../lib/audio-streamer";
-import { audioContext } from "../lib/utils";
-import VolMeterWorket from "../lib/worklets/vol-meter";
-import { LiveConnectConfig } from "@google/genai";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { GenAILiveClient } from '../genai-live-client';
+import { LiveClientOptions } from '../types';
+import { AudioStreamer } from '../lib/audio-streamer';
+import { audioContext } from '../lib/utils';
+import VolMeterWorket from '../lib/worklets/vol-meter';
+import { LiveConnectConfig } from '@google/genai';
 
 export type UseLiveAPIResults = {
   client: GenAILiveClient;
@@ -38,7 +38,7 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
   const client = useMemo(() => new GenAILiveClient(options), [options]);
   const audioStreamerRef = useRef<AudioStreamer | null>(null);
 
-  const [model, setModel] = useState<string>("models/gemini-2.0-flash-exp");
+  const [model, setModel] = useState<string>('models/gemini-2.0-flash-exp');
   const [config, setConfig] = useState<LiveConnectConfig>({});
   const [connected, setConnected] = useState(false);
   const [volume, setVolume] = useState(0);
@@ -46,10 +46,10 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
   // register audio for streaming server -> speakers
   useEffect(() => {
     if (!audioStreamerRef.current) {
-      audioContext({ id: "audio-out" }).then((audioCtx: AudioContext) => {
+      audioContext({ id: 'audio-out' }).then((audioCtx: AudioContext) => {
         audioStreamerRef.current = new AudioStreamer(audioCtx);
         audioStreamerRef.current
-          .addWorklet<any>("vumeter-out", VolMeterWorket, (ev: any) => {
+          .addWorklet<any>('vumeter-out', VolMeterWorket, (ev: any) => {
             setVolume(ev.data.volume);
           })
           .then(() => {
@@ -69,7 +69,7 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
     };
 
     const onError = (error: ErrorEvent) => {
-      console.error("error", error);
+      console.error('error', error);
     };
 
     const stopAudioStreamer = () => audioStreamerRef.current?.stop();
@@ -78,26 +78,26 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
       audioStreamerRef.current?.addPCM16(new Uint8Array(data));
 
     client
-      .on("error", onError)
-      .on("open", onOpen)
-      .on("close", onClose)
-      .on("interrupted", stopAudioStreamer)
-      .on("audio", onAudio);
+      .on('error', onError)
+      .on('open', onOpen)
+      .on('close', onClose)
+      .on('interrupted', stopAudioStreamer)
+      .on('audio', onAudio);
 
     return () => {
       client
-        .off("error", onError)
-        .off("open", onOpen)
-        .off("close", onClose)
-        .off("interrupted", stopAudioStreamer)
-        .off("audio", onAudio)
+        .off('error', onError)
+        .off('open', onOpen)
+        .off('close', onClose)
+        .off('interrupted', stopAudioStreamer)
+        .off('audio', onAudio)
         .disconnect();
     };
   }, [client]);
 
   const connect = useCallback(async () => {
     if (!config) {
-      throw new Error("config has not been set");
+      throw new Error('config has not been set');
     }
     client.disconnect();
     await client.connect(model, config);

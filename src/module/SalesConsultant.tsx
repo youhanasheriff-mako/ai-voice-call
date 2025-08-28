@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { useEffect, memo } from 'react';
-import { useLiveAPIContext } from '../../module/contexts/LiveAPIContext';
+import { useLiveAPIContext } from './contexts/LiveAPIContext';
 import {
   FunctionDeclaration,
   LiveServerToolCall,
@@ -46,7 +46,7 @@ function SalesConsultantComponent() {
     setConfig({
       responseModalities: [Modality.AUDIO],
       speechConfig: {
-        voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Aoede' } },
+        voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Fenrir' } },
       },
       systemInstruction: {
         parts: [

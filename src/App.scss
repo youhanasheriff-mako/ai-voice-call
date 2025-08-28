@@ -56,6 +56,8 @@
 body {
   font-family: 'Space Mono', monospace;
   background: var(--Neutral-30);
+  margin: 0;
+  padding: 0;
 }
 
 .material-symbols-outlined {
@@ -108,62 +110,60 @@ body {
   flex-direction: column;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-}
-
-.streaming-console {
-  background: var(--Neutral-15);
-  color: var(--gray-300);
-  display: flex;
+// Minimal Home Screen Styles
+.App {
   height: 100vh;
   width: 100vw;
+  background: var(--Neutral-15);
+  color: var(--text);
+  position: relative;
+}
 
-  a,
-  a:visited,
-  a:active {
-    color: var(--gray-300);
-  }
+.minimal-home {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--Neutral-15);
+}
 
-  .disabled {
-    pointer-events: none;
+.home-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
 
-    > * {
-      pointer-events: none;
-    }
-  }
+.sales-ai-title {
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--accent-blue);
+  margin: 0;
+  font-family: 'Space Mono', monospace;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
 
-  main {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    flex-grow: 1;
-    gap: 1rem;
-    max-width: 100%;
-    overflow: hidden;
-  }
+.home-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  width: 100%;
+}
 
-  .main-app-area {
-    display: flex;
-    flex: 1;
-    align-items: center;
-    justify-content: center;
-  }
+.sales-consultant-interface {
+  // Hidden interface for SalesConsultant component
+  display: none;
+}
 
-  .function-call {
-    position: absolute;
-    top: 0;
-    width: 100%;
-    height: 50%;
-    overflow-y: auto;
+@media (max-width: 768px) {
+  .sales-ai-title {
+    font-size: 2rem;
   }
 }
 
-/* video player */
-.stream {
-  flex-grow: 1;
-  max-width: 90%;
-  border-radius: 32px;
-  max-height: fit-content;
+@media (max-width: 480px) {
+  .sales-ai-title {
+    font-size: 1.5rem;
+  }
 }

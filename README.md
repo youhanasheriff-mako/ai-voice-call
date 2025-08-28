@@ -14,6 +14,14 @@ To get started, [create a free Gemini API key](https://aistudio.google.com/apike
 $ npm install && npm start
 ```
 
+const voiceOptions = [
+{ value: "Puck", label: "Puck" },
+{ value: "Charon", label: "Charon" },
+{ value: "Kore", label: "Kore" },
+{ value: "Fenrir", label: "Fenrir" },
+{ value: "Aoede", label: "Aoede" },
+];
+
 We have provided several example applications on other branches of this repository:
 
 - [demos/GenExplainer](https://github.com/google-gemini/multimodal-live-api-web-console/tree/demos/genexplainer)
@@ -25,34 +33,34 @@ We have provided several example applications on other branches of this reposito
 Below is an example of an entire application that will use Google Search grounding and then render graphs using [vega-embed](https://github.com/vega/vega-embed):
 
 ```typescript
-import { type FunctionDeclaration, SchemaType } from "@google/generative-ai";
-import { useEffect, useRef, useState, memo } from "react";
-import vegaEmbed from "vega-embed";
-import { useLiveAPIContext } from "../../contexts/LiveAPIContext";
+import { type FunctionDeclaration, SchemaType } from '@google/generative-ai';
+import { useEffect, useRef, useState, memo } from 'react';
+import vegaEmbed from 'vega-embed';
+import { useLiveAPIContext } from '../../contexts/LiveAPIContext';
 
 export const declaration: FunctionDeclaration = {
-  name: "render_altair",
-  description: "Displays an altair graph in json format.",
+  name: 'render_altair',
+  description: 'Displays an altair graph in json format.',
   parameters: {
     type: SchemaType.OBJECT,
     properties: {
       json_graph: {
         type: SchemaType.STRING,
         description:
-          "JSON STRING representation of the graph to render. Must be a string, not a json object",
+          'JSON STRING representation of the graph to render. Must be a string, not a json object',
       },
     },
-    required: ["json_graph"],
+    required: ['json_graph'],
   },
 };
 
 export function Altair() {
-  const [jsonString, setJSONString] = useState<string>("");
+  const [jsonString, setJSONString] = useState<string>('');
   const { client, setConfig } = useLiveAPIContext();
 
   useEffect(() => {
     setConfig({
-      model: "models/gemini-2.0-flash-exp",
+      model: 'models/gemini-2.0-flash-exp',
       systemInstruction: {
         parts: [
           {
@@ -68,16 +76,16 @@ export function Altair() {
     const onToolCall = (toolCall: ToolCall) => {
       console.log(`got toolcall`, toolCall);
       const fc = toolCall.functionCalls.find(
-        (fc) => fc.name === declaration.name
+        fc => fc.name === declaration.name
       );
       if (fc) {
         const str = (fc.args as any).json_graph;
         setJSONString(str);
       }
     };
-    client.on("toolcall", onToolCall);
+    client.on('toolcall', onToolCall);
     return () => {
-      client.off("toolcall", onToolCall);
+      client.off('toolcall', onToolCall);
     };
   }, [client]);
 
