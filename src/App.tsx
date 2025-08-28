@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-import { useRef, useState, useEffect } from "react";
-import "./App.scss";
-import { LiveAPIProvider, useLiveAPIContext } from "./contexts/LiveAPIContext";
-import SidePanel from "./components/side-panel/SidePanel";
-import { SalesConsultant } from "./components/altair/SalesConsultant";
-import ControlTray from "./components/control-tray/ControlTray";
-import cn from "classnames";
-import { LiveClientOptions } from "./types";
+import { useRef, useState, useEffect } from 'react';
+import './App.scss';
+import { LiveAPIProvider, useLiveAPIContext } from './contexts/LiveAPIContext';
+import SidePanel from './components/side-panel/SidePanel';
+import { SalesConsultant } from './components/altair/SalesConsultant';
+import ControlTray from './components/control-tray/ControlTray';
+import cn from 'classnames';
+import { LiveClientOptions } from './types';
 
 const API_KEY = process.env.REACT_APP_GEMINI_API_KEY as string;
-if (typeof API_KEY !== "string") {
-  throw new Error("set REACT_APP_GEMINI_API_KEY in .env");
+if (typeof API_KEY !== 'string') {
+  throw new Error('set REACT_APP_GEMINI_API_KEY in .env');
 }
 
 const apiOptions: LiveClientOptions = {
@@ -36,7 +36,9 @@ const apiOptions: LiveClientOptions = {
 function AvatarVideo() {
   const { volume, connected } = useLiveAPIContext();
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [currentSrc, setCurrentSrc] = useState('/assets/ai_avatar_not_talking.mp4');
+  const [currentSrc, setCurrentSrc] = useState(
+    '/assets/ai_avatar_not_talking.mp4'
+  );
   const [confidence, setConfidence] = useState(0);
   const [speechDuration, setSpeechDuration] = useState(0);
   const avatarRef = useRef<HTMLVideoElement>(null);
@@ -47,7 +49,7 @@ function AvatarVideo() {
   const MIN_SPEECH_DURATION = 200;
   const MIN_SILENCE_DURATION = 300;
   const DEBOUNCE_TIME = 150;
-  
+
   // State tracking refs
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const volumeHistoryRef = useRef<number[]>([]);
@@ -84,16 +86,21 @@ function AvatarVideo() {
 
       // Trend analysis confidence
       if (volumeHistoryRef.current.length >= 3) {
-        const recentAvg = volumeHistoryRef.current.slice(-3).reduce((a, b) => a + b, 0) / 3;
-        const overallAvg = volumeHistoryRef.current.reduce((a, b) => a + b, 0) / volumeHistoryRef.current.length;
-        
+        const recentAvg =
+          volumeHistoryRef.current.slice(-3).reduce((a, b) => a + b, 0) / 3;
+        const overallAvg =
+          volumeHistoryRef.current.reduce((a, b) => a + b, 0) /
+          volumeHistoryRef.current.length;
+
         if (recentAvg > overallAvg) {
           conf += 0.2;
         }
       }
 
       // Consistency confidence
-      const consistentVolumes = volumeHistoryRef.current.filter(v => v > SILENCE_THRESHOLD).length;
+      const consistentVolumes = volumeHistoryRef.current.filter(
+        v => v > SILENCE_THRESHOLD
+      ).length;
       conf += (consistentVolumes / volumeHistoryRef.current.length) * 0.3;
 
       // Duration-based confidence boost
@@ -111,10 +118,12 @@ function AvatarVideo() {
     // Determine if AI should be speaking based on enhanced logic
     const shouldBeSpeaking = () => {
       const stateDuration = now - lastStateChangeRef.current;
-      
+
       if (isSpeaking) {
         // Continue speaking if volume is above silence threshold or haven't been silent long enough
-        return volume > SILENCE_THRESHOLD || stateDuration < MIN_SILENCE_DURATION;
+        return (
+          volume > SILENCE_THRESHOLD || stateDuration < MIN_SILENCE_DURATION
+        );
       } else {
         // Start speaking if volume is above threshold and confidence is high enough
         return volume > SPEAKING_THRESHOLD && newConfidence > 0.3;
@@ -122,12 +131,12 @@ function AvatarVideo() {
     };
 
     const speaking = shouldBeSpeaking();
-    
+
     // Clear existing debounce timer
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
     }
-    
+
     // Debounce the speaking state change to prevent rapid switching
     debounceTimerRef.current = setTimeout(() => {
       if (speaking !== isSpeaking) {
@@ -139,7 +148,7 @@ function AvatarVideo() {
         setSpeechDuration(now - lastStateChangeRef.current);
       }
     }, DEBOUNCE_TIME);
-    
+
     return () => {
       if (debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current);
@@ -148,31 +157,66 @@ function AvatarVideo() {
   }, [volume, connected, isSpeaking]);
 
   useEffect(() => {
-    const newSrc = isSpeaking 
-      ? '/assets/ai_avatar_talking.mp4' 
+    const newSrc = isSpeaking
+      ? '/assets/ai_avatar_talking.mp4'
       : '/assets/ai_avatar_not_talking.mp4';
-    
-    if (newSrc !== currentSrc && avatarRef.current) {
-      setCurrentSrc(newSrc);
-      
-      // Smooth transition: fade out, change source, fade in
+
+    if (newSrc !== currentSrc && avatarRef.current && connected) {
       const video = avatarRef.current;
-      video.style.opacity = '0.7';
-      
-      setTimeout(() => {
-        video.src = newSrc;
-        video.load();
-        video.play().then(() => {
-          video.style.opacity = '1';
-        }).catch(console.error);
-      }, 150);
+
+      // Immediate source update for better responsiveness
+      setCurrentSrc(newSrc);
+
+      // Force video reload and play
+      video.src = newSrc;
+      video.load();
+
+      // Ensure video plays after load
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            // Video started playing successfully
+            console.log(
+              'Avatar video switched to:',
+              isSpeaking ? 'talking' : 'not talking'
+            );
+          })
+          .catch(error => {
+            console.warn('Avatar video play failed:', error);
+            // Retry play after a short delay
+            setTimeout(() => {
+              video.play().catch(console.error);
+            }, 100);
+          });
+      }
     }
-  }, [isSpeaking, currentSrc]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSpeaking, connected]);
 
   // Handle video load and play
   const handleLoadedData = () => {
+    if (avatarRef.current && connected) {
+      const video = avatarRef.current;
+      video.currentTime = 0; // Reset to beginning
+      video.play().catch(error => {
+        console.warn('Video play on load failed:', error);
+      });
+    }
+  };
+
+  // Handle video errors
+  const handleVideoError = (
+    e: React.SyntheticEvent<HTMLVideoElement, Event>
+  ) => {
+    console.error('Avatar video error:', e.currentTarget.error);
+    // Try to reload the video
     if (avatarRef.current) {
-      avatarRef.current.play().catch(console.error);
+      setTimeout(() => {
+        if (avatarRef.current) {
+          avatarRef.current.load();
+        }
+      }, 1000);
     }
   };
 
@@ -180,28 +224,37 @@ function AvatarVideo() {
     <div className="avatar-container">
       <video
         ref={avatarRef}
-        className={cn("ai-avatar", {
+        key={currentSrc}
+        className={cn('ai-avatar', {
           hidden: !connected,
           speaking: isSpeaking,
           'high-confidence': confidence > 0.7,
           'medium-confidence': confidence > 0.4 && confidence <= 0.7,
-          'low-confidence': confidence <= 0.4
+          'low-confidence': confidence <= 0.4,
         })}
         autoPlay
         loop
         muted
         playsInline
+        preload="auto"
         src={currentSrc}
         onLoadedData={handleLoadedData}
+        onError={handleVideoError}
+        onCanPlay={() => {
+          // Ensure video plays when it can
+          if (avatarRef.current && connected) {
+            avatarRef.current.play().catch(console.error);
+          }
+        }}
       />
       {connected && (
         <div className="speech-indicators">
-          <div className={cn("speech-state", { active: isSpeaking })}>
+          <div className={cn('speech-state', { active: isSpeaking })}>
             {isSpeaking ? 'Speaking' : 'Silent'}
           </div>
           <div className="confidence-bar">
-            <div 
-              className="confidence-fill" 
+            <div
+              className="confidence-fill"
               style={{ width: `${confidence * 100}%` }}
             />
           </div>
@@ -232,7 +285,7 @@ function App() {
               <SalesConsultant />
               <AvatarVideo />
               <video
-                className={cn("stream", {
+                className={cn('stream', {
                   hidden: !videoRef.current || !videoStream,
                 })}
                 ref={videoRef}
