@@ -446,6 +446,18 @@
   justify-content: center;
   gap: 2px;
   height: 24px;
+  
+  @media (max-width: 768px) {
+    width: 20px;
+    height: 20px;
+    gap: 1.5px;
+  }
+  
+  @media (max-width: 480px) {
+    width: 18px;
+    height: 18px;
+    gap: 1px;
+  }
 
   &--active {
     .ai-voice-plugin__audio-pulse-line {
@@ -466,6 +478,16 @@
   background: #ccc;
   border-radius: 1.5px;
   transition: all 0.3s ease;
+  
+  @media (max-width: 768px) {
+    width: 2px;
+    min-height: 3px;
+  }
+  
+  @media (max-width: 480px) {
+    width: 1.5px;
+    min-height: 2px;
+  }
 }
 
 // Animations
