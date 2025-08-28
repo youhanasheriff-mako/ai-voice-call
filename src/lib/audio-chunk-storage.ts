@@ -477,12 +477,13 @@ export class AudioChunkStorageService {
         // Add the audio chunk
         mergedSegments.push(data);
 
-        // Estimate chunk duration (rough approximation)
+        // Improved duration calculation using actual chunk sample rate
+        const chunkSampleRate = chunk.sampleRate || defaultOptions.sampleRate;
+        const chunkChannels = chunk.channels || defaultOptions.channels;
         const estimatedDuration =
           chunk.duration ||
-          (data.byteLength /
-            (defaultOptions.sampleRate * defaultOptions.channels * 2)) *
-            1000;
+          (data.byteLength / (chunkSampleRate * chunkChannels * 2)) * 1000 +
+            1000; // 2 bytes per 16-bit sample
         lastEndTime = chunkStartTime + estimatedDuration;
       }
 
