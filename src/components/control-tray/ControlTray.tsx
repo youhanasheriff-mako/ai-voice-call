@@ -16,7 +16,7 @@
 
 import cn from "classnames";
 
-import { memo, ReactNode, RefObject, useEffect, useRef, useState } from "react";
+import { memo, ReactNode, RefObject, useCallback, useEffect, useRef, useState } from "react";
 import { useLiveAPIContext } from "../../contexts/LiveAPIContext";
 import { UseMediaStreamResult } from "../../hooks/use-media-stream-mux";
 import { useScreenCapture } from "../../hooks/use-screen-capture";
@@ -77,6 +77,21 @@ function ControlTray({
 
   const { client, connected, connect, disconnect, volume } =
     useLiveAPIContext();
+
+  // Custom connect function that automatically initiates conversation
+  const handleConnect = useCallback(async () => {
+    if (!connected) {
+      await connect();
+      // Send an initial greeting message to start the conversation
+      setTimeout(() => {
+        if (client && client.status === 'connected') {
+          client.send({ text: "Hello! I'm ready to start our conversation. How can I help you today?" });
+        }
+      }, 1000); // Small delay to ensure connection is fully established
+    } else {
+      disconnect();
+    }
+  }, [connected, connect, disconnect, client]);
 
   useEffect(() => {
     if (!connected && connectButtonRef.current) {
@@ -204,7 +219,7 @@ function ControlTray({
           <button
             ref={connectButtonRef}
             className={cn("action-button connect-toggle", { connected })}
-            onClick={connected ? disconnect : connect}
+            onClick={handleConnect}
           >
             <span className="material-symbols-outlined filled">
               {connected ? "pause" : "play_arrow"}

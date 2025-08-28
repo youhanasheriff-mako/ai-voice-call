@@ -171,3 +171,101 @@ body {
   border-radius: 32px;
   max-height: fit-content;
 }
+
+/* AI Avatar styles */
+.avatar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.ai-avatar {
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  object-fit: cover;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  border: 3px solid var(--accent-blue);
+  
+  &.hidden {
+    opacity: 0;
+    transform: scale(0.8);
+    pointer-events: none;
+  }
+  
+  &.speaking {
+    border-color: var(--accent-green);
+    box-shadow: 0 0 30px rgba(168, 218, 181, 0.5);
+    transform: scale(1.05);
+  }
+  
+  &:not(.speaking) {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 20px rgba(161, 228, 242, 0.3);
+  }
+  
+  &.high-confidence {
+    border-width: 4px;
+    box-shadow: 0 0 35px rgba(168, 218, 181, 0.7);
+  }
+  
+  &.medium-confidence {
+    border-width: 3px;
+    box-shadow: 0 0 25px rgba(161, 228, 242, 0.5);
+  }
+  
+  &.low-confidence {
+    border-width: 2px;
+    opacity: 0.8;
+  }
+}
+
+/* Speech Detection Indicators */
+.speech-indicators {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 200px;
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 12px;
+  border: 1px solid var(--border-stroke);
+}
+
+.speech-state {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--gray-300);
+  transition: color 0.2s ease;
+  
+  &.active {
+    color: var(--accent-green);
+    text-shadow: 0 0 8px rgba(168, 218, 181, 0.5);
+  }
+}
+
+.confidence-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--gray-700);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+
+.confidence-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-red) 0%, #ff9c7a 40%, var(--accent-blue) 70%, var(--accent-green) 100%);
+  transition: width 0.3s ease;
+  border-radius: 3px;
+}
+
+.speech-duration {
+  font-size: 0.75rem;
+  color: var(--gray-300);
+  font-family: var(--font-family);
+  min-height: 1rem;
+}

@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import "./App.scss";
-import { LiveAPIProvider } from "./contexts/LiveAPIContext";
+import { LiveAPIProvider, useLiveAPIContext } from "./contexts/LiveAPIContext";
 import SidePanel from "./components/side-panel/SidePanel";
 import { SalesConsultant } from "./components/altair/SalesConsultant";
 import ControlTray from "./components/control-tray/ControlTray";
@@ -31,6 +31,188 @@ if (typeof API_KEY !== "string") {
 const apiOptions: LiveClientOptions = {
   apiKey: API_KEY,
 };
+
+// Avatar component with robust AI speech detection
+function AvatarVideo() {
+  const { volume, connected } = useLiveAPIContext();
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [currentSrc, setCurrentSrc] = useState('/assets/ai_avatar_not_talking.mp4');
+  const [confidence, setConfidence] = useState(0);
+  const [speechDuration, setSpeechDuration] = useState(0);
+  const avatarRef = useRef<HTMLVideoElement>(null);
+
+  // Enhanced detection thresholds and parameters
+  const SPEAKING_THRESHOLD = 0.01;
+  const SILENCE_THRESHOLD = 0.005;
+  const MIN_SPEECH_DURATION = 200;
+  const MIN_SILENCE_DURATION = 300;
+  const DEBOUNCE_TIME = 150;
+  
+  // State tracking refs
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const volumeHistoryRef = useRef<number[]>([]);
+  const lastStateChangeRef = useRef<number>(Date.now());
+  const lastVolumeUpdateRef = useRef<number>(Date.now());
+
+  useEffect(() => {
+    if (!connected || volume === undefined) {
+      // Reset state when disconnected
+      setIsSpeaking(false);
+      setConfidence(0);
+      setSpeechDuration(0);
+      volumeHistoryRef.current = [];
+      return;
+    }
+
+    const now = Date.now();
+    lastVolumeUpdateRef.current = now;
+
+    // Update volume history for trend analysis
+    volumeHistoryRef.current.push(volume);
+    if (volumeHistoryRef.current.length > 10) {
+      volumeHistoryRef.current.shift();
+    }
+
+    // Calculate confidence based on multiple factors
+    const calculateConfidence = () => {
+      let conf = 0;
+
+      // Volume-based confidence
+      if (volume > SPEAKING_THRESHOLD) {
+        conf += Math.min(volume / SPEAKING_THRESHOLD, 1) * 0.4;
+      }
+
+      // Trend analysis confidence
+      if (volumeHistoryRef.current.length >= 3) {
+        const recentAvg = volumeHistoryRef.current.slice(-3).reduce((a, b) => a + b, 0) / 3;
+        const overallAvg = volumeHistoryRef.current.reduce((a, b) => a + b, 0) / volumeHistoryRef.current.length;
+        
+        if (recentAvg > overallAvg) {
+          conf += 0.2;
+        }
+      }
+
+      // Consistency confidence
+      const consistentVolumes = volumeHistoryRef.current.filter(v => v > SILENCE_THRESHOLD).length;
+      conf += (consistentVolumes / volumeHistoryRef.current.length) * 0.3;
+
+      // Duration-based confidence boost
+      const stateDuration = now - lastStateChangeRef.current;
+      if (isSpeaking && stateDuration > MIN_SPEECH_DURATION) {
+        conf += 0.1;
+      }
+
+      return Math.min(conf, 1);
+    };
+
+    const newConfidence = calculateConfidence();
+    setConfidence(newConfidence);
+
+    // Determine if AI should be speaking based on enhanced logic
+    const shouldBeSpeaking = () => {
+      const stateDuration = now - lastStateChangeRef.current;
+      
+      if (isSpeaking) {
+        // Continue speaking if volume is above silence threshold or haven't been silent long enough
+        return volume > SILENCE_THRESHOLD || stateDuration < MIN_SILENCE_DURATION;
+      } else {
+        // Start speaking if volume is above threshold and confidence is high enough
+        return volume > SPEAKING_THRESHOLD && newConfidence > 0.3;
+      }
+    };
+
+    const speaking = shouldBeSpeaking();
+    
+    // Clear existing debounce timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    
+    // Debounce the speaking state change to prevent rapid switching
+    debounceTimerRef.current = setTimeout(() => {
+      if (speaking !== isSpeaking) {
+        setIsSpeaking(speaking);
+        lastStateChangeRef.current = now;
+        setSpeechDuration(0);
+      } else {
+        // Update duration for current state
+        setSpeechDuration(now - lastStateChangeRef.current);
+      }
+    }, DEBOUNCE_TIME);
+    
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [volume, connected, isSpeaking]);
+
+  useEffect(() => {
+    const newSrc = isSpeaking 
+      ? '/assets/ai_avatar_talking.mp4' 
+      : '/assets/ai_avatar_not_talking.mp4';
+    
+    if (newSrc !== currentSrc && avatarRef.current) {
+      setCurrentSrc(newSrc);
+      
+      // Smooth transition: fade out, change source, fade in
+      const video = avatarRef.current;
+      video.style.opacity = '0.7';
+      
+      setTimeout(() => {
+        video.src = newSrc;
+        video.load();
+        video.play().then(() => {
+          video.style.opacity = '1';
+        }).catch(console.error);
+      }, 150);
+    }
+  }, [isSpeaking, currentSrc]);
+
+  // Handle video load and play
+  const handleLoadedData = () => {
+    if (avatarRef.current) {
+      avatarRef.current.play().catch(console.error);
+    }
+  };
+
+  return (
+    <div className="avatar-container">
+      <video
+        ref={avatarRef}
+        className={cn("ai-avatar", {
+          hidden: !connected,
+          speaking: isSpeaking,
+          'high-confidence': confidence > 0.7,
+          'medium-confidence': confidence > 0.4 && confidence <= 0.7,
+          'low-confidence': confidence <= 0.4
+        })}
+        autoPlay
+        loop
+        muted
+        playsInline
+        src={currentSrc}
+        onLoadedData={handleLoadedData}
+      />
+      {connected && (
+        <div className="speech-indicators">
+          <div className={cn("speech-state", { active: isSpeaking })}>
+            {isSpeaking ? 'Speaking' : 'Silent'}
+          </div>
+          <div className="confidence-bar">
+            <div 
+              className="confidence-fill" 
+              style={{ width: `${confidence * 100}%` }}
+            />
+          </div>
+          <div className="speech-duration">
+            {speechDuration > 0 && `${Math.round(speechDuration / 1000)}s`}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function App() {
   // this video reference is used for displaying the active stream, whether that is the webcam or screen capture
@@ -48,6 +230,7 @@ function App() {
             <div className="main-app-area">
               {/* APP goes here */}
               <SalesConsultant />
+              <AvatarVideo />
               <video
                 className={cn("stream", {
                   hidden: !videoRef.current || !videoStream,
