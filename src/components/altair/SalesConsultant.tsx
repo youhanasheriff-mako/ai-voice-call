@@ -13,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useEffect, useRef, useState, memo } from 'react';
-import vegaEmbed from 'vega-embed';
+import { useEffect, memo } from 'react';
 import { useLiveAPIContext } from '../../contexts/LiveAPIContext';
 import {
   FunctionDeclaration,
@@ -23,25 +22,10 @@ import {
   Type,
 } from '@google/genai';
 
-const declaration: FunctionDeclaration = {
-  name: 'render_altair',
-  description: 'Displays an altair graph in json format.',
-  parameters: {
-    type: Type.OBJECT,
-    properties: {
-      json_graph: {
-        type: Type.STRING,
-        description:
-          'JSON STRING representation of the graph to render. Must be a string, not a json object',
-      },
-    },
-    required: ['json_graph'],
-  },
-};
-
 export const endCallDeclaration: FunctionDeclaration = {
   name: 'end_call',
-  description: 'Ends the current call conversation when the conversation concludes naturally.',
+  description:
+    'Ends the current call conversation when the conversation concludes naturally.',
   parameters: {
     type: Type.OBJECT,
     properties: {
@@ -54,8 +38,7 @@ export const endCallDeclaration: FunctionDeclaration = {
   },
 };
 
-function AltairComponent() {
-  const [jsonString, setJSONString] = useState<string>('');
+function SalesConsultantComponent() {
   const { client, setConfig, setModel } = useLiveAPIContext();
 
   useEffect(() => {
@@ -75,7 +58,7 @@ function AltairComponent() {
       tools: [
         // there is a free-tier quota for search
         { googleSearch: {} },
-        { functionDeclarations: [declaration, endCallDeclaration] },
+        { functionDeclarations: [endCallDeclaration] },
       ],
     });
   }, [setConfig, setModel]);
@@ -85,16 +68,7 @@ function AltairComponent() {
       if (!toolCall.functionCalls) {
         return;
       }
-      
-      // Handle altair graph rendering
-      const altairFc = toolCall.functionCalls.find(
-        fc => fc.name === declaration.name
-      );
-      if (altairFc) {
-        const str = (altairFc.args as any).json_graph;
-        setJSONString(str);
-      }
-      
+
       // Handle end_call tool
       const endCallFc = toolCall.functionCalls.find(
         fc => fc.name === endCallDeclaration.name
@@ -102,20 +76,24 @@ function AltairComponent() {
       if (endCallFc) {
         // Send successful response first
         client.sendToolResponse({
-          functionResponses: [{
-            response: { output: { success: true, message: 'Call ended successfully' } },
-            id: endCallFc.id,
-            name: endCallFc.name,
-          }],
+          functionResponses: [
+            {
+              response: {
+                output: { success: true, message: 'Call ended successfully' },
+              },
+              id: endCallFc.id,
+              name: endCallFc.name,
+            },
+          ],
         });
-        
+
         // Disconnect the client after a short delay to allow the response to be sent
         setTimeout(() => {
           client.disconnect();
         }, 500);
         return;
       }
-      
+
       // send data for the response of your tool call
       // in this case Im just saying it was successful
       if (toolCall.functionCalls.length) {
@@ -138,15 +116,7 @@ function AltairComponent() {
     };
   }, [client]);
 
-  const embedRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (embedRef.current && jsonString) {
-      console.log('jsonString', jsonString);
-      vegaEmbed(embedRef.current, JSON.parse(jsonString));
-    }
-  }, [embedRef, jsonString]);
-  return <div className="vega-embed" ref={embedRef} />;
+  return <div className="sales-consultant-interface" />;
 }
 
-export const Altair = memo(AltairComponent);
+export const SalesConsultant = memo(SalesConsultantComponent);
