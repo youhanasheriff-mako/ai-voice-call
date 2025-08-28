@@ -17,7 +17,7 @@
 import {
   createWorketFromSrc,
   registeredWorklets,
-} from "./audioworklet-registry";
+} from './audioworklet-registry';
 import { audioContext } from './utils';
 
 export class AudioStreamer {
@@ -173,7 +173,7 @@ export class AudioStreamer {
           if (node) {
             source.connect(node);
             node.port.onmessage = function (ev: MessageEvent) {
-              handlers.forEach((handler) => {
+              handlers.forEach(handler => {
                 handler.call(node.port, ev);
               });
             };
@@ -237,7 +237,7 @@ export class AudioStreamer {
   }
 
   async resume() {
-    if (this.context.state === "suspended") {
+    if (this.context.state === 'suspended') {
       await this.context.resume();
     }
     this.isStreamComplete = false;

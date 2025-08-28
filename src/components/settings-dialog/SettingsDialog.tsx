@@ -6,7 +6,7 @@ import {
   useState,
 } from 'react';
 import './settings-dialog.scss';
-import { useLiveAPIContext } from '../../contexts/LiveAPIContext';
+import { useLiveAPIContext } from '../../module/contexts/LiveAPIContext';
 import VoiceSelector from './VoiceSelector';
 import { LiveConnectConfig } from '@google/genai';
 

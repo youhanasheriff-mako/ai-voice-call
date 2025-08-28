@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { useEffect, memo } from 'react';
-import { useLiveAPIContext } from '../../contexts/LiveAPIContext';
+import { useLiveAPIContext } from '../../module/contexts/LiveAPIContext';
 import {
   FunctionDeclaration,
   LiveServerToolCall,

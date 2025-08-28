@@ -81,7 +81,6 @@ const VideoCallInterfaceContent: React.FC<VideoCallInterfaceProps> = ({
 
   return (
     <div className="video-call-interface">
-
       {/* Call header */}
       <div className="call-header">
         <div className="call-status">
@@ -162,16 +161,20 @@ const VideoCallInterfaceContent: React.FC<VideoCallInterfaceProps> = ({
         <div className="microphone-status">
           <div className="mic-permission-status">
             {microphonePermission === 'checking' && (
-              <div className="permission-checking">🎤 Requesting microphone access...</div>
+              <div className="permission-checking">
+                🎤 Requesting microphone access...
+              </div>
             )}
             {microphonePermission === 'denied' && (
-              <div className="permission-denied">🚫 Microphone access denied</div>
+              <div className="permission-denied">
+                🚫 Microphone access denied
+              </div>
             )}
             {microphoneError && (
               <div className="mic-error">{microphoneError}</div>
             )}
           </div>
-          
+
           {microphonePermission === 'granted' && !isMuted && (
             <div className="mic-level-indicator">
               <div className="mic-level-label">Input Level</div>
@@ -187,7 +190,7 @@ const VideoCallInterfaceContent: React.FC<VideoCallInterfaceProps> = ({
               </div>
             </div>
           )}
-          
+
           {!isMuted && isCallActive && microphonePermission === 'granted' && (
             <div className="recording-indicator">
               <div className="recording-dot"></div>
@@ -200,21 +203,24 @@ const VideoCallInterfaceContent: React.FC<VideoCallInterfaceProps> = ({
       {/* Control buttons */}
       <div className="call-controls">
         <button
-          className={`control-btn ${isMuted ? 'active' : ''} ${inVolume > 0.1 ? 'has-input speaking' : ''}`}
+          className={`control-btn ${isMuted ? 'active' : ''} ${
+            inVolume > 0.1 ? 'has-input speaking' : ''
+          }`}
           onClick={toggleMute}
           aria-label={isMuted ? 'Unmute' : 'Mute'}
         >
           {isMuted ? <MicOff size={24} /> : <Mic size={24} />}
           {/* Microphone level indicator on button */}
           {!isMuted && microphonePermission === 'granted' && (
-            <div className="mic-level-ring" style={{
-              opacity: Math.min(inVolume * 3, 1),
-              transform: `scale(${1 + inVolume * 0.5})`
-            }}></div>
+            <div
+              className="mic-level-ring"
+              style={{
+                opacity: Math.min(inVolume * 3, 1),
+                transform: `scale(${1 + inVolume * 0.5})`,
+              }}
+            ></div>
           )}
-          {!isMuted && inVolume > 0.1 && (
-            <div className="speaking-ring"></div>
-          )}
+          {!isMuted && inVolume > 0.1 && <div className="speaking-ring"></div>}
         </button>
 
         <button

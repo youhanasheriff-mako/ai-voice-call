@@ -1,11 +1,11 @@
-import { useCallback, useState } from "react";
-import Select from "react-select";
-import { useLiveAPIContext } from "../../contexts/LiveAPIContext";
-import { Modality } from "@google/genai";
+import { useCallback, useState } from 'react';
+import Select from 'react-select';
+import { useLiveAPIContext } from '../../module/contexts/LiveAPIContext';
+import { Modality } from '@google/genai';
 
 const responseOptions = [
-  { value: "audio", label: "audio" },
-  { value: "text", label: "text" },
+  { value: 'audio', label: 'audio' },
+  { value: 'text', label: 'text' },
 ];
 
 export default function ResponseModalitySelector() {
@@ -17,11 +17,11 @@ export default function ResponseModalitySelector() {
   } | null>(responseOptions[0]);
 
   const updateConfig = useCallback(
-    (modality: "audio" | "text") => {
+    (modality: 'audio' | 'text') => {
       setConfig({
         ...config,
         responseModalities: [
-          modality === "audio" ? Modality.AUDIO : Modality.TEXT,
+          modality === 'audio' ? Modality.AUDIO : Modality.TEXT,
         ],
       });
     },
@@ -36,28 +36,28 @@ export default function ResponseModalitySelector() {
         className="react-select"
         classNamePrefix="react-select"
         styles={{
-          control: (baseStyles) => ({
+          control: baseStyles => ({
             ...baseStyles,
-            background: "var(--Neutral-15)",
-            color: "var(--Neutral-90)",
-            minHeight: "33px",
-            maxHeight: "33px",
+            background: 'var(--Neutral-15)',
+            color: 'var(--Neutral-90)',
+            minHeight: '33px',
+            maxHeight: '33px',
             border: 0,
           }),
           option: (styles, { isFocused, isSelected }) => ({
             ...styles,
             backgroundColor: isFocused
-              ? "var(--Neutral-30)"
+              ? 'var(--Neutral-30)'
               : isSelected
-              ? "var(--Neutral-20)"
+              ? 'var(--Neutral-20)'
               : undefined,
           }),
         }}
         defaultValue={selectedOption}
         options={responseOptions}
-        onChange={(e) => {
+        onChange={e => {
           setSelectedOption(e);
-          if (e && (e.value === "audio" || e.value === "text")) {
+          if (e && (e.value === 'audio' || e.value === 'text')) {
             updateConfig(e.value);
           }
         }}

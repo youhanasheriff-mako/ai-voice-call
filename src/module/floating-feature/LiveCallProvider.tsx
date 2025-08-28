@@ -110,7 +110,9 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
   // Audio state
   const [isMuted, setIsMuted] = useState(false);
   const [isSpeakerOn, setIsSpeakerOn] = useState(true);
-  const [microphonePermission, setMicrophonePermission] = useState<'granted' | 'denied' | 'prompt' | 'checking'>('prompt');
+  const [microphonePermission, setMicrophonePermission] = useState<
+    'granted' | 'denied' | 'prompt' | 'checking'
+  >('prompt');
   const [microphoneError, setMicrophoneError] = useState<string | null>(null);
 
   // Performance optimization states
@@ -165,23 +167,37 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
 
     if (liveAPI.connected && isCallActive && !isMuted) {
       console.log('🎤 Starting audio recording...');
-      audioRecorder.on('data', onData).on('volume', onVolume).start().catch(error => {
-        console.error('🎤 Failed to start audio recording:', error);
-        
-        // Update microphone permission state based on error
-        if (error.name === 'NotAllowedError') {
-          setMicrophonePermission('denied');
-          setMicrophoneError('Microphone access denied. Please allow microphone access and try again.');
-          setCallError('Microphone access denied. Please check your browser permissions.');
-        } else if (error.name === 'NotFoundError') {
-          setMicrophonePermission('denied');
-          setMicrophoneError('No microphone found. Please connect a microphone.');
-          setCallError('No microphone detected. Please connect a microphone and try again.');
-        } else {
-          setMicrophoneError(`Microphone error: ${error.message}`);
-          setCallError('Failed to access microphone. Please check your audio settings.');
-        }
-      });
+      audioRecorder
+        .on('data', onData)
+        .on('volume', onVolume)
+        .start()
+        .catch(error => {
+          console.error('🎤 Failed to start audio recording:', error);
+
+          // Update microphone permission state based on error
+          if (error.name === 'NotAllowedError') {
+            setMicrophonePermission('denied');
+            setMicrophoneError(
+              'Microphone access denied. Please allow microphone access and try again.'
+            );
+            setCallError(
+              'Microphone access denied. Please check your browser permissions.'
+            );
+          } else if (error.name === 'NotFoundError') {
+            setMicrophonePermission('denied');
+            setMicrophoneError(
+              'No microphone found. Please connect a microphone.'
+            );
+            setCallError(
+              'No microphone detected. Please connect a microphone and try again.'
+            );
+          } else {
+            setMicrophoneError(`Microphone error: ${error.message}`);
+            setCallError(
+              'Failed to access microphone. Please check your audio settings.'
+            );
+          }
+        });
     } else {
       console.log('🎤 Stopping audio recording...');
       audioRecorder.stop();
@@ -386,14 +402,18 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
       const connectionStart = performance.now();
       await liveAPI.connect();
       const connectionTime = performance.now() - connectionStart;
-      console.log(`✅ Connection established in ${connectionTime.toFixed(2)}ms`);
+      console.log(
+        `✅ Connection established in ${connectionTime.toFixed(2)}ms`
+      );
 
       // Update latency metrics
       setLatencyMetrics(prev => ({
         ...prev,
         networkLatency: connectionTime,
       }));
-      console.log('📊 Latency metrics updated:', { networkLatency: connectionTime });
+      console.log('📊 Latency metrics updated:', {
+        networkLatency: connectionTime,
+      });
 
       setRetryCount(0); // Reset retry count on successful connection
       console.log('🔄 Retry count reset to 0');
@@ -406,12 +426,16 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
 
           // Process audio with buffering for smoother playback
           if (audioData && audioData.data) {
-            console.log('🎵 Processing audio chunk:', { size: audioData.data.length });
+            console.log('🎵 Processing audio chunk:', {
+              size: audioData.data.length,
+            });
             setAudioBuffer(prev => {
               const newBuffer = [...prev, audioData.data];
               // Keep buffer size manageable for low latency
               const trimmedBuffer = newBuffer.slice(-10); // Keep last 10 chunks
-              console.log('📦 Audio buffer updated:', { chunks: trimmedBuffer.length });
+              console.log('📦 Audio buffer updated:', {
+                chunks: trimmedBuffer.length,
+              });
               return trimmedBuffer;
             });
           }
@@ -425,7 +449,10 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
             processingLatency: processingTime,
             audioLatency: audioLatency,
           }));
-          console.log('📊 Audio metrics updated:', { processingTime: processingTime.toFixed(2), audioLatency });
+          console.log('📊 Audio metrics updated:', {
+            processingTime: processingTime.toFixed(2),
+            audioLatency,
+          });
         });
         console.log('✅ Audio monitoring setup completed');
       } else {
@@ -438,12 +465,20 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
       const errorMessage =
         error instanceof Error ? error.message : 'Failed to start call';
       setCallError(errorMessage);
-      console.error('💥 Error details:', { message: errorMessage, retryCount, maxRetries });
+      console.error('💥 Error details:', {
+        message: errorMessage,
+        retryCount,
+        maxRetries,
+      });
 
       // Attempt automatic recovery for certain errors
       if (retryCount < maxRetries && shouldRetry(error)) {
         const retryDelay = Math.pow(2, retryCount) * 1000;
-        console.log(`🔄 Attempting recovery (${retryCount + 1}/${maxRetries}) in ${retryDelay}ms...`);
+        console.log(
+          `🔄 Attempting recovery (${
+            retryCount + 1
+          }/${maxRetries}) in ${retryDelay}ms...`
+        );
         setIsRecovering(true);
         setRetryCount(prev => prev + 1);
 
@@ -548,8 +583,10 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
     try {
       setIsMuted(prev => {
         const newMuted = !prev;
-        console.log(newMuted ? '🔇 Muting microphone' : '🎤 Unmuting microphone');
-        
+        console.log(
+          newMuted ? '🔇 Muting microphone' : '🎤 Unmuting microphone'
+        );
+
         // Audio recording will be handled by the useEffect that watches isMuted
         return newMuted;
       });
@@ -606,42 +643,51 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
     }
   }, []);
 
-  const requestMicrophonePermission = useCallback(async (): Promise<boolean> => {
-    try {
-      setMicrophonePermission('checking');
-      setMicrophoneError(null);
-      
-      // Check if navigator.mediaDevices is available
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error('Microphone access is not supported in this browser');
-      }
+  const requestMicrophonePermission =
+    useCallback(async (): Promise<boolean> => {
+      try {
+        setMicrophonePermission('checking');
+        setMicrophoneError(null);
 
-      // Request microphone permission
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      
-      // Stop the stream immediately as we just needed permission
-      stream.getTracks().forEach(track => track.stop());
-      
-      setMicrophonePermission('granted');
-      console.log('🎤 Microphone permission granted');
-      return true;
-    } catch (error: any) {
-      console.error('🎤 Microphone permission denied:', error);
-      setMicrophonePermission('denied');
-      
-      if (error.name === 'NotAllowedError') {
-        setMicrophoneError('Microphone access denied. Please allow microphone access in your browser settings.');
-      } else if (error.name === 'NotFoundError') {
-        setMicrophoneError('No microphone found. Please connect a microphone and try again.');
-      } else if (error.name === 'NotSupportedError') {
-        setMicrophoneError('Microphone access is not supported in this browser.');
-      } else {
-        setMicrophoneError(`Microphone error: ${error.message}`);
+        // Check if navigator.mediaDevices is available
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          throw new Error('Microphone access is not supported in this browser');
+        }
+
+        // Request microphone permission
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
+
+        // Stop the stream immediately as we just needed permission
+        stream.getTracks().forEach(track => track.stop());
+
+        setMicrophonePermission('granted');
+        console.log('🎤 Microphone permission granted');
+        return true;
+      } catch (error: any) {
+        console.error('🎤 Microphone permission denied:', error);
+        setMicrophonePermission('denied');
+
+        if (error.name === 'NotAllowedError') {
+          setMicrophoneError(
+            'Microphone access denied. Please allow microphone access in your browser settings.'
+          );
+        } else if (error.name === 'NotFoundError') {
+          setMicrophoneError(
+            'No microphone found. Please connect a microphone and try again.'
+          );
+        } else if (error.name === 'NotSupportedError') {
+          setMicrophoneError(
+            'Microphone access is not supported in this browser.'
+          );
+        } else {
+          setMicrophoneError(`Microphone error: ${error.message}`);
+        }
+
+        return false;
       }
-      
-      return false;
-    }
-  }, []);
+    }, []);
 
   const contextValue: LiveCallContextType = {
     ...liveAPI,

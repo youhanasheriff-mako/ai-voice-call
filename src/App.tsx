@@ -16,7 +16,10 @@
 
 import { useRef, useState, useEffect } from 'react';
 import './App.scss';
-import { LiveAPIProvider, useLiveAPIContext } from './contexts/LiveAPIContext';
+import {
+  LiveAPIProvider,
+  useLiveAPIContext,
+} from './module/contexts/LiveAPIContext';
 import SidePanel from './components/side-panel/SidePanel';
 import { SalesConsultant } from './components/altair/SalesConsultant';
 import ControlTray from './components/control-tray/ControlTray';

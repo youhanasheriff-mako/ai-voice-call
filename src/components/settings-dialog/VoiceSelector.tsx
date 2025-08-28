@@ -1,13 +1,13 @@
-import { useCallback, useEffect, useState } from "react";
-import Select from "react-select";
-import { useLiveAPIContext } from "../../contexts/LiveAPIContext";
+import { useCallback, useEffect, useState } from 'react';
+import Select from 'react-select';
+import { useLiveAPIContext } from '../../module/contexts/LiveAPIContext';
 
 const voiceOptions = [
-  { value: "Puck", label: "Puck" },
-  { value: "Charon", label: "Charon" },
-  { value: "Kore", label: "Kore" },
-  { value: "Fenrir", label: "Fenrir" },
-  { value: "Aoede", label: "Aoede" },
+  { value: 'Puck', label: 'Puck' },
+  { value: 'Charon', label: 'Charon' },
+  { value: 'Kore', label: 'Kore' },
+  { value: 'Fenrir', label: 'Fenrir' },
+  { value: 'Aoede', label: 'Aoede' },
 ];
 
 export default function VoiceSelector() {
@@ -16,7 +16,7 @@ export default function VoiceSelector() {
   useEffect(() => {
     const voiceName =
       config.speechConfig?.voiceConfig?.prebuiltVoiceConfig?.voiceName ||
-      "Atari02";
+      'Atari02';
     const voiceOption = { value: voiceName, label: voiceName };
     setSelectedOption(voiceOption);
   }, [config]);
@@ -50,27 +50,27 @@ export default function VoiceSelector() {
         className="react-select"
         classNamePrefix="react-select"
         styles={{
-          control: (baseStyles) => ({
+          control: baseStyles => ({
             ...baseStyles,
-            background: "var(--Neutral-15)",
-            color: "var(--Neutral-90)",
-            minHeight: "33px",
-            maxHeight: "33px",
+            background: 'var(--Neutral-15)',
+            color: 'var(--Neutral-90)',
+            minHeight: '33px',
+            maxHeight: '33px',
             border: 0,
           }),
           option: (styles, { isFocused, isSelected }) => ({
             ...styles,
             backgroundColor: isFocused
-              ? "var(--Neutral-30)"
+              ? 'var(--Neutral-30)'
               : isSelected
-              ? "var(--Neutral-20)"
+              ? 'var(--Neutral-20)'
               : undefined,
           }),
         }}
         value={selectedOption}
         defaultValue={selectedOption}
         options={voiceOptions}
-        onChange={(e) => {
+        onChange={e => {
           setSelectedOption(e);
           if (e) {
             updateConfig(e.value);
