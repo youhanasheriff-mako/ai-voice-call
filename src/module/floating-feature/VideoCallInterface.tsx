@@ -81,19 +81,6 @@ const VideoCallInterfaceContent: React.FC<VideoCallInterfaceProps> = ({
 
   return (
     <div className="video-call-interface">
-      {/* Status bar */}
-      <div className="status-bar">
-        <div className="time">9:41</div>
-        <div className="status-indicators">
-          <div className="signal-strength">
-            <div className="bar"></div>
-            <div className="bar"></div>
-            <div className="bar"></div>
-            <div className="bar"></div>
-          </div>
-          <div className="battery">100%</div>
-        </div>
-      </div>
 
       {/* Call header */}
       <div className="call-header">
@@ -213,7 +200,7 @@ const VideoCallInterfaceContent: React.FC<VideoCallInterfaceProps> = ({
       {/* Control buttons */}
       <div className="call-controls">
         <button
-          className={`control-btn ${isMuted ? 'active' : ''}`}
+          className={`control-btn ${isMuted ? 'active' : ''} ${inVolume > 0.1 ? 'has-input speaking' : ''}`}
           onClick={toggleMute}
           aria-label={isMuted ? 'Unmute' : 'Mute'}
         >
@@ -224,6 +211,9 @@ const VideoCallInterfaceContent: React.FC<VideoCallInterfaceProps> = ({
               opacity: Math.min(inVolume * 3, 1),
               transform: `scale(${1 + inVolume * 0.5})`
             }}></div>
+          )}
+          {!isMuted && inVolume > 0.1 && (
+            <div className="speaking-ring"></div>
           )}
         </button>
 
