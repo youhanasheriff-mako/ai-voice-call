@@ -19,6 +19,8 @@ import { LiveClientOptions } from '../../types';
 import { audioChunkStorage } from '../../lib/audio-chunk-storage';
 import { audioIndexedDBStorage } from '../../lib/indexeddb-storage';
 import { AudioRecorder } from '../../lib/audio-recorder';
+import { systemPrompt } from '../../constants';
+import { FunctionDeclaration, Type } from '@google/genai';
 
 const API_KEY = process.env.REACT_APP_GEMINI_API_KEY as string;
 
@@ -34,6 +36,22 @@ if (!API_KEY || API_KEY === 'your_api_key_here') {
   );
   console.log('3. Restart the development server');
 }
+
+export const endCallDeclaration: FunctionDeclaration = {
+  name: 'end_call',
+  description:
+    'Ends the current call conversation when the conversation concludes naturally.',
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      action: {
+        type: Type.STRING,
+        description: 'The action to perform, should always be "end_call"',
+      },
+    },
+    required: ['action'],
+  },
+};
 
 interface LiveCallContextType extends UseLiveAPIResults {
   // Call state management
@@ -104,6 +122,7 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
   const [callError, setCallError] = useState<string | null>(null);
   const [isRecovering, setIsRecovering] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const [isConnecting, setIsConnecting] = useState(false);
   const maxRetries = 3;
   const [callStartTime, setCallStartTime] = useState<number>(0);
 
@@ -117,6 +136,7 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
 
   // Performance optimization states
   const [audioBuffer, setAudioBuffer] = useState<Float32Array[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [bufferSize, setBufferSize] = useState(4096);
   const [latencyMetrics, setLatencyMetrics] = useState({
     audioLatency: 0,
@@ -351,10 +371,20 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
     } finally {
       setIsRecovering(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isRecovering, retryCount, maxRetries, liveAPI]);
 
   const startCall = useCallback(async () => {
+    // Prevent multiple simultaneous connection attempts
+    if (isConnecting || liveAPI.connected) {
+      console.log(
+        '⚠️ Connection already in progress or established, skipping startCall'
+      );
+      return;
+    }
+
     console.log('🚀 Starting call initialization...');
+    setIsConnecting(true);
     try {
       setCallError(null);
       setIsRecovering(false);
@@ -383,7 +413,7 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
         systemInstruction: {
           parts: [
             {
-              text: 'You are a helpful AI assistant in a voice call. Keep responses conversational and natural. Respond quickly and efficiently for real-time communication.',
+              text: systemPrompt,
             },
           ],
         },
@@ -394,6 +424,11 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
             },
           },
         },
+        tools: [
+          // there is a free-tier quota for search
+          { googleSearch: {} },
+          { functionDeclarations: [endCallDeclaration] },
+        ],
       });
       console.log('✅ Live API configuration completed');
 
@@ -492,8 +527,11 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
       }
 
       throw error;
+    } finally {
+      setIsConnecting(false);
     }
-  }, [liveAPI, retryCount, maxRetries, shouldRetry]); // Removed recoverConnection to break circular dependency
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [liveAPI, retryCount, maxRetries, shouldRetry, isConnecting]); // Added isConnecting to dependencies
 
   const endCall = useCallback(async () => {
     try {
@@ -504,6 +542,7 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
       setCallError(null);
       setIsRecovering(false);
       setRetryCount(0);
+      setIsConnecting(false);
 
       // Audio session cleanup and data persistence
       if (currentSessionId) {
@@ -577,6 +616,7 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
         error instanceof Error ? error.message : 'Failed to end call'
       );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [liveAPI, currentSessionId, callDuration]);
 
   const toggleMute = useCallback(async () => {

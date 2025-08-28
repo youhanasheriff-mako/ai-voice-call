@@ -1,7 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './VideoCallInterface.scss';
 import { LiveCallProvider, useLiveCall } from './LiveCallProvider';
-import { Mic, MicOff, Phone, Volume2, MicIcon, AlertCircle, AlertTriangle } from 'lucide-react';
+import {
+  Mic,
+  MicOff,
+  Phone,
+  Volume2,
+  MicIcon,
+  AlertCircle,
+  AlertTriangle,
+} from 'lucide-react';
 
 interface VideoCallInterfaceProps {
   onClose: () => void;
@@ -28,16 +36,32 @@ const VideoCallInterfaceContent: React.FC<VideoCallInterfaceProps> = ({
   } = useLiveCall();
 
   const [isAISpeaking, setIsAISpeaking] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const hasInitialized = useRef(false);
 
-  // Start call when component mounts
+  // Start call when component mounts - only once
   useEffect(() => {
     console.log('connected', connected);
     console.log('isCallActive', isCallActive);
-    if (!connected && !isCallActive) {
+    console.log('isConnecting', isConnecting);
+    
+    // Only start call if not already connected, not active, not connecting, and hasn't been initialized
+    if (!connected && !isCallActive && !isConnecting && !hasInitialized.current) {
       console.log('startCall');
-      startCall();
+      hasInitialized.current = true;
+      setIsConnecting(true);
+      startCall().finally(() => {
+        setIsConnecting(false);
+      });
     }
+
+    // Cleanup function to reset initialization state when component unmounts
+    return () => {
+      hasInitialized.current = false;
+      setIsConnecting(false);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connected, isCallActive]); // Removed startCall from dependencies to prevent infinite loop
 
   // AI speaking detection based on volume
@@ -101,7 +125,9 @@ const VideoCallInterfaceContent: React.FC<VideoCallInterfaceProps> = ({
       <div className="video-area">
         {callError ? (
           <div className="error-display">
-            <div className="error-icon"><AlertTriangle size={20} /></div>
+            <div className="error-icon">
+              <AlertTriangle size={20} />
+            </div>
             <div className="error-message">{callError}</div>
             <div className="error-instructions">
               <p>To fix this:</p>
