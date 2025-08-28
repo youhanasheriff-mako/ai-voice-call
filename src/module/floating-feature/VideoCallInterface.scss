@@ -174,19 +174,21 @@
   color: white;
   z-index: 10;
   background: rgba(0, 0, 0, 0.3);
-  padding: 12px 20px;
-  border-radius: 20px;
+  padding: 8px 16px;
   backdrop-filter: blur(10px);
+  border-radius: 16px;
 
   .caller-name {
-    font-size: 20px;
+    font-size: 16px;
     font-weight: 600;
-    margin-bottom: 2px;
+    margin-bottom: 1px;
+    line-height: 1.2;
   }
 
   .caller-title {
-    font-size: 14px;
+    font-size: 12px;
     opacity: 0.9;
+    line-height: 1.2;
   }
 }
 
@@ -295,14 +297,14 @@
 
   .caller-info {
     bottom: 140px;
-    padding: 8px 16px;
+    padding: 6px 12px;
 
     .caller-name {
-      font-size: 18px;
+      font-size: 14px;
     }
 
     .caller-title {
-      font-size: 12px;
+      font-size: 11px;
     }
   }
 
@@ -341,13 +343,14 @@
 
   .caller-info {
     bottom: 120px;
+    padding: 6px 12px;
 
     .caller-name {
-      font-size: 16px;
+      font-size: 14px;
     }
 
     .caller-title {
-      font-size: 12px;
+      font-size: 10px;
     }
   }
 

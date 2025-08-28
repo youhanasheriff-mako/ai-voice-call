@@ -53,23 +53,14 @@ const MobilePhoneOverlay: React.FC<MobilePhoneOverlayProps> = ({
       aria-modal="true"
       aria-label="AI Voice Call Interface"
     >
-      <div className="phone-container">
-        <div className="phone-frame">
-          {/* Phone notch */}
-          <div className="phone-notch">
-            <div className="notch-speaker"></div>
-            <div className="notch-camera"></div>
-          </div>
-          
-          {/* Phone screen */}
-          <div className="phone-screen">
+      <div className="video-call-container">
+        <div className="video-call-frame">
+          {/* Video call screen */}
+          <div className="video-call-screen">
             {showContent && (
               <VideoCallInterface onClose={onClose} />
             )}
           </div>
-          
-          {/* Phone home indicator */}
-          <div className="phone-home-indicator"></div>
         </div>
         
         {/* Close button */}
