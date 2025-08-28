@@ -268,9 +268,18 @@ export class AudioChunkStorageService {
   ): Promise<AudioChunk[]> {
     try {
       const allChunks = await this.getAudioChunks();
-      return allChunks
-        .filter(chunk => chunk.sessionId === sessionId)
-        .sort((a, b) => a.index - b.index);
+      const sessionChunks = allChunks.filter(
+        chunk => chunk.sessionId === sessionId
+      );
+
+      // Sort by sequenceIndex if available (for proper audio ordering within type),
+      // otherwise fall back to global index
+      return sessionChunks.sort((a, b) => {
+        if (a.sequenceIndex !== undefined && b.sequenceIndex !== undefined) {
+          return a.sequenceIndex - b.sequenceIndex;
+        }
+        return a.index - b.index;
+      });
     } catch (error) {
       throw new Error(
         `Failed to retrieve chunks for session ${sessionId}: ${
