@@ -15,10 +15,10 @@ import React, {
   useRef,
 } from 'react';
 import { useLiveAPI, UseLiveAPIResults } from '../use-live-api';
-import { LiveClientOptions } from '../../types';
-import { audioChunkStorage } from '../../lib/audio-chunk-storage';
-import { audioIndexedDBStorage } from '../../lib/indexeddb-storage';
-import { AudioRecorder } from '../../lib/audio-recorder';
+import { LiveClientOptions } from '../types';
+import { audioChunkStorage } from '../lib/audio-chunk-storage';
+import { audioIndexedDBStorage } from '../lib/indexeddb-storage';
+import { AudioRecorder } from '../lib/audio-recorder';
 
 const API_KEY = process.env.REACT_APP_GEMINI_API_KEY as string;
 

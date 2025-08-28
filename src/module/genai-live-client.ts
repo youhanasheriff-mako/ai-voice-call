@@ -30,9 +30,9 @@ import {
 
 import { EventEmitter } from 'eventemitter3';
 import { difference } from 'lodash';
-import { LiveClientOptions, StreamingLog } from '../types';
-import { base64ToArrayBuffer } from '../lib/utils';
-import { audioChunkStorage } from '../lib/audio-chunk-storage';
+import { LiveClientOptions, StreamingLog } from './types';
+import { base64ToArrayBuffer } from './lib/utils';
+import { audioChunkStorage } from './lib/audio-chunk-storage';
 
 /**
  * Event types that can be emitted by the MultimodalLiveClient.
