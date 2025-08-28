@@ -1,5 +1,5 @@
 import React from 'react';
-import { Phone } from 'lucide-react';
+import { Phone, ChevronDown } from 'lucide-react';
 import './FloatingActionButton.scss';
 
 interface FloatingActionButtonProps {
@@ -18,7 +18,7 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
       aria-label="Open AI Voice Call"
     >
       <div className="fab-icon">
-        <Phone size={24} />
+        {isActive ? <ChevronDown size={24} /> : <Phone size={24} />}
       </div>
       <div className="fab-pulse"></div>
     </button>
