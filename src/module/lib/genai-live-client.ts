@@ -369,7 +369,7 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
   sendRealtimeInput(chunks: Array<{ mimeType: string; data: string }>) {
     // Check WebSocket connection state before sending data
     if (this._status !== 'connected' || !this.session) {
-      console.error("WebSocket is not open. Cannot send message.");
+      console.error('WebSocket is not open. Cannot send message.');
       // Optionally, you can implement a reconnect logic here
       // or queue the message to be sent once the connection is re-established.
       return;
@@ -451,7 +451,7 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
   sendToolResponse(toolResponse: LiveClientToolResponse) {
     // Check WebSocket connection state before sending data
     if (this._status !== 'connected' || !this.session) {
-      console.error("WebSocket is not open. Cannot send message.");
+      console.error('WebSocket is not open. Cannot send message.');
       // Optionally, you can implement a reconnect logic here
       // or queue the message to be sent once the connection is re-established.
       return;
@@ -474,7 +474,7 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
   send(parts: Part | Part[], turnComplete: boolean = true) {
     // Check WebSocket connection state before sending data
     if (this._status !== 'connected' || !this.session) {
-      console.error("WebSocket is not open. Cannot send message.");
+      console.error('WebSocket is not open. Cannot send message.');
       // Optionally, you can implement a reconnect logic here
       // or queue the message to be sent once the connection is re-established.
       return;
