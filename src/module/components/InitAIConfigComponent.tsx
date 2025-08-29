@@ -12,7 +12,7 @@ import { useLiveCall } from '../contexts/LiveCallContext';
 export const endCallDeclaration: FunctionDeclaration = {
   name: 'end_call',
   description:
-    'Ends the current call conversation when the conversation concludes naturally.',
+    'Ends the current call conversation when the conversation concludes.',
   parameters: {
     type: Type.OBJECT,
     properties: {
@@ -26,7 +26,7 @@ export const endCallDeclaration: FunctionDeclaration = {
 };
 
 function InitAIConfigComponent() {
-  const { client, setConfig, setModel } = useLiveCall();
+  const { endCall, client, setConfig, setModel } = useLiveCall();
 
   useEffect(() => {
     console.log('🔧 InitAIConfig: Setting up AI configuration...');
@@ -79,7 +79,8 @@ function InitAIConfigComponent() {
 
         // Disconnect the client after a short delay to allow the response to be sent
         setTimeout(() => {
-          client.disconnect();
+          // client.disconnect();
+          endCall();
         }, 500);
         return;
       }

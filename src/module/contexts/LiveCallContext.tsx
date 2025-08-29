@@ -478,7 +478,7 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
       setIsRecovering(false);
       setRetryCount(0);
       setIsConnecting(false);
-      runOnce.current = true;
+      // runOnce.current = true;
 
       // Explicitly stop audio recording before disconnecting
       if (audioRecorderRef.current) {
