@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './VideoCallInterface.scss';
-import { LiveCallProvider, useLiveCall } from '../../contexts/LiveCallContext';
+import { useLiveCall } from '../../contexts/LiveCallContext';
 import {
   Mic,
   MicOff,
@@ -275,11 +275,7 @@ const VideoCallInterfaceContent: React.FC<VideoCallInterfaceProps> = ({
 };
 
 const VideoCallInterface: React.FC<VideoCallInterfaceProps> = props => {
-  return (
-    <LiveCallProvider>
-      <VideoCallInterfaceContent {...props} />
-    </LiveCallProvider>
-  );
+  return <VideoCallInterfaceContent {...props} />;
 };
 
 export default VideoCallInterface;
