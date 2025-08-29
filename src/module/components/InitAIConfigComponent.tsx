@@ -1,5 +1,4 @@
 import { useEffect, memo } from 'react';
-import { useLiveAPIContext } from '../contexts/LiveAPIContext';
 import './SalesConsultant.scss';
 import {
   FunctionDeclaration,
@@ -8,6 +7,7 @@ import {
   Type,
 } from '@google/genai';
 import { systemPrompt } from '../constants';
+import { useLiveCall } from '../contexts/LiveCallContext';
 
 export const endCallDeclaration: FunctionDeclaration = {
   name: 'end_call',
@@ -25,12 +25,15 @@ export const endCallDeclaration: FunctionDeclaration = {
   },
 };
 
-function SalesConsultantComponent() {
-  const { client, setConfig, setModel } = useLiveAPIContext();
+function InitAIConfigComponent() {
+  const { client, setConfig, setModel } = useLiveCall();
 
   useEffect(() => {
+    console.log('🔧 InitAIConfig: Setting up AI configuration...');
     setModel('models/gemini-2.0-flash-exp');
-    setConfig({
+    console.log('✅ Model set to: models/gemini-2.0-flash-exp');
+
+    const config = {
       responseModalities: [Modality.AUDIO],
       speechConfig: {
         voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Fenrir' } },
@@ -47,7 +50,11 @@ function SalesConsultantComponent() {
         { googleSearch: {} },
         { functionDeclarations: [endCallDeclaration] },
       ],
-    });
+    };
+
+    console.log('🔧 Setting config:', config);
+    setConfig(config);
+    console.log('✅ InitAIConfig: Configuration setup completed');
   }, [setConfig, setModel]);
 
   useEffect(() => {
@@ -106,4 +113,4 @@ function SalesConsultantComponent() {
   return <div className="sales-consultant-interface" />;
 }
 
-export const SalesConsultant = memo(SalesConsultantComponent);
+export const InitAIConfig = memo(InitAIConfigComponent);

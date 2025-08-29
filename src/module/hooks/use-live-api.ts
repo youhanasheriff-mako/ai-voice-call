@@ -80,6 +80,10 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
   }, [client]);
 
   const connect = useCallback(async () => {
+    console.log('🔌 Attempting to connect to live API...');
+    console.log('🔧 Configuring live API model and settings...');
+    console.log('model', model);
+    console.log('config', config);
     if (!config) {
       throw new Error('config has not been set');
     }

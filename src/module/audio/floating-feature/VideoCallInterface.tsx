@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './VideoCallInterface.scss';
-import { LiveCallProvider, useLiveCall } from './LiveCallProvider';
+import { LiveCallProvider, useLiveCall } from '../../contexts/LiveCallContext';
 import {
   Mic,
   MicOff,
@@ -45,9 +45,14 @@ const VideoCallInterfaceContent: React.FC<VideoCallInterfaceProps> = ({
     console.log('connected', connected);
     console.log('isCallActive', isCallActive);
     console.log('isConnecting', isConnecting);
-    
+
     // Only start call if not already connected, not active, not connecting, and hasn't been initialized
-    if (!connected && !isCallActive && !isConnecting && !hasInitialized.current) {
+    if (
+      !connected &&
+      !isCallActive &&
+      !isConnecting &&
+      !hasInitialized.current
+    ) {
       console.log('startCall');
       hasInitialized.current = true;
       setIsConnecting(true);

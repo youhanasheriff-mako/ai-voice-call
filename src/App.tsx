@@ -1,16 +1,10 @@
 import React, { useState } from 'react';
 import './App.scss';
-import { LiveAPIProvider } from './module/contexts/LiveAPIContext';
-// import { SalesConsultant } from './module/components/SalesConsultant';
+import { InitAIConfig } from './module/components/InitAIConfigComponent';
 import { FloatingFeature } from './module/audio/floating-feature';
 import { AudioModal } from './module/audio/audio-modal/AudioModal';
 import { AudioLines } from 'lucide-react';
-import { LiveClientOptions } from './types';
-import { geminiApiKey } from './module/constants';
-
-const apiOptions: LiveClientOptions = {
-  apiKey: geminiApiKey,
-};
+import { LiveCallProvider } from './module/contexts/LiveCallContext';
 
 function App() {
   const [isAudioModalOpen, setIsAudioModalOpen] = useState(false);
@@ -25,7 +19,7 @@ function App() {
 
   return (
     <div className="App">
-      <LiveAPIProvider options={apiOptions}>
+      <LiveCallProvider>
         <div className="minimal-home">
           <header className="home-header">
             <h1 className="sales-ai-title">Sales AI</h1>
@@ -38,11 +32,11 @@ function App() {
             >
               <AudioLines size={24} />
             </button>
-            {/* <SalesConsultant /> */}
+            <InitAIConfig />
           </main>
         </div>
         <FloatingFeature />
-      </LiveAPIProvider>
+      </LiveCallProvider>
       <AudioModal isOpen={isAudioModalOpen} onClose={handleCloseAudioModal} />
     </div>
   );
