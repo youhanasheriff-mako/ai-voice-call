@@ -362,6 +362,10 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
       console.log('🔌 Attempting to connect to live API...');
       const connectionStart = performance.now();
       await liveAPI.connect();
+
+      setTimeout(() => {
+        liveAPI.client.send({ text: 'Hi' });
+      }, 500);
       const connectionTime = performance.now() - connectionStart;
       console.log(
         `✅ Connection established in ${connectionTime.toFixed(2)}ms`
