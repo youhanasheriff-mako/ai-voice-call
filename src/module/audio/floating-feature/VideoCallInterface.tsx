@@ -33,6 +33,7 @@ const VideoCallInterfaceContent: React.FC<VideoCallInterfaceProps> = ({
     inVolume,
     microphonePermission,
     microphoneError,
+    isCallEndedIntentionally,
   } = useLiveCall();
 
   const [isAISpeaking, setIsAISpeaking] = useState(false);
@@ -46,12 +47,13 @@ const VideoCallInterfaceContent: React.FC<VideoCallInterfaceProps> = ({
     console.log('isCallActive', isCallActive);
     console.log('isConnecting', isConnecting);
 
-    // Only start call if not already connected, not active, not connecting, and hasn't been initialized
+    // Only start call if not already connected, not active, not connecting, hasn't been initialized, and call wasn't ended intentionally
     if (
       !connected &&
       !isCallActive &&
       !isConnecting &&
-      !hasInitialized.current
+      !hasInitialized.current &&
+      !isCallEndedIntentionally
     ) {
       console.log('startCall');
       hasInitialized.current = true;
@@ -61,19 +63,18 @@ const VideoCallInterfaceContent: React.FC<VideoCallInterfaceProps> = ({
       });
     }
 
-    // Cleanup function to reset initialization state when component unmounts
+    // Cleanup function - don't reset hasInitialized to prevent restart loops
     return () => {
-      hasInitialized.current = false;
       setIsConnecting(false);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [connected, isCallActive]); // Removed startCall from dependencies to prevent infinite loop
+  }, [connected, isCallActive, isCallEndedIntentionally]); // Removed startCall from dependencies to prevent infinite loop
 
   // Separate useEffect for component unmount cleanup
   useEffect(() => {
     return () => {
-      // End call if still active when component unmounts
-      if (isCallActive || connected) {
+      // End call if still active when component unmounts, but not if it was ended intentionally
+      if ((isCallActive || connected) && !isCallEndedIntentionally) {
         console.log('🔚 VideoCallInterface unmounting - ending active call');
         endCall().catch(error => {
           console.error('Failed to end call during component cleanup:', error);

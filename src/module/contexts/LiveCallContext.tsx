@@ -34,6 +34,9 @@ interface LiveCallContextType extends UseLiveAPIResults {
   // Overlay management
   setOverlayCloseCallback: (callback: (() => void) | null) => void;
 
+  // Call state management
+  isCallEndedIntentionally: boolean;
+
   // Audio controls
   isMuted: boolean;
   isSpeakerOn: boolean;
@@ -94,6 +97,8 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
   const [isRecovering, setIsRecovering] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isCallEndedIntentionally, setIsCallEndedIntentionally] =
+    useState(false);
   const maxRetries = 3;
   const [callStartTime, setCallStartTime] = useState<number>(0);
 
@@ -327,7 +332,8 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
 
   // Recovery function for connection issues
   const recoverConnection = useCallback(async () => {
-    if (isRecovering || retryCount >= maxRetries) return;
+    if (isRecovering || retryCount >= maxRetries || isCallEndedIntentionally)
+      return;
 
     console.log('Attempting connection recovery...');
     setIsRecovering(true);
@@ -348,7 +354,7 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
       setIsRecovering(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isRecovering, retryCount, maxRetries, liveAPI]);
+  }, [isRecovering, retryCount, maxRetries, liveAPI, isCallEndedIntentionally]);
 
   const runOnce = useRef(true);
 
@@ -366,6 +372,7 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
     try {
       setCallError(null);
       setIsRecovering(false);
+      setIsCallEndedIntentionally(false);
       console.log('✅ Call state reset completed');
 
       // Connect to the live API with performance monitoring
@@ -450,7 +457,11 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
       });
 
       // Attempt automatic recovery for certain errors
-      if (retryCount < maxRetries && shouldRetry(error)) {
+      if (
+        retryCount < maxRetries &&
+        shouldRetry(error) &&
+        !isCallEndedIntentionally
+      ) {
         const retryDelay = Math.pow(2, retryCount) * 1000;
         console.log(
           `🔄 Attempting recovery (${
@@ -486,6 +497,7 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
       setIsRecovering(false);
       setRetryCount(0);
       setIsConnecting(false);
+      setIsCallEndedIntentionally(true);
       // runOnce.current = true;
 
       // Explicitly stop audio recording before disconnecting
@@ -694,6 +706,7 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
     startCall,
     endCall,
     setOverlayCloseCallback,
+    isCallEndedIntentionally,
     isMuted,
     isSpeakerOn,
     inVolume,
