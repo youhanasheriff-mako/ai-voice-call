@@ -342,6 +342,8 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isRecovering, retryCount, maxRetries, liveAPI]);
 
+  const runOnce = useRef(true);
+
   const startCall = useCallback(async () => {
     // Prevent multiple simultaneous connection attempts
     if (isConnecting || liveAPI.connected) {
@@ -363,9 +365,12 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
       const connectionStart = performance.now();
       await liveAPI.connect();
 
-      setTimeout(() => {
-        liveAPI.client.send({ text: 'Hi' });
-      }, 500);
+      if (runOnce.current) {
+        setTimeout(() => {
+          liveAPI.client.send({ text: 'Hi' });
+        }, 500);
+        runOnce.current = false;
+      }
       const connectionTime = performance.now() - connectionStart;
       console.log(
         `✅ Connection established in ${connectionTime.toFixed(2)}ms`
@@ -473,6 +478,7 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
       setIsRecovering(false);
       setRetryCount(0);
       setIsConnecting(false);
+      runOnce.current = true;
 
       // Explicitly stop audio recording before disconnecting
       if (audioRecorderRef.current) {
