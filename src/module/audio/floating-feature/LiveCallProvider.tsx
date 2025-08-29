@@ -20,7 +20,7 @@ import { audioChunkStorage } from '../../lib/audio-chunk-storage';
 import { audioIndexedDBStorage } from '../../lib/indexeddb-storage';
 import { AudioRecorder } from '../../lib/audio-recorder';
 import { systemPrompt, geminiApiKey } from '../../constants';
-import { FunctionDeclaration, Type } from '@google/genai';
+import { FunctionDeclaration, Type, LiveServerToolCall } from '@google/genai';
 
 // Validate API key
 
@@ -430,6 +430,57 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
       setRetryCount(0); // Reset retry count on successful connection
       console.log('🔄 Retry count reset to 0');
 
+      // Set up tool call handling for end_call functionality
+      if (liveAPI.client) {
+        console.log('🔧 Setting up tool call handling...');
+        const onToolCall = (toolCall: LiveServerToolCall) => {
+          console.log('🛠️ Tool call received:', toolCall);
+          
+          // Handle end_call function
+           const endCallFc = toolCall.functionCalls?.find(
+             fc => fc.name === endCallDeclaration.name
+           );
+          if (endCallFc) {
+            console.log('📞 End call function triggered');
+            // Send successful response first
+            liveAPI.client.sendToolResponse({
+              functionResponses: [
+                {
+                  response: {
+                    output: { success: true, message: 'Call ended successfully' },
+                  },
+                  id: endCallFc.id,
+                  name: endCallFc.name,
+                },
+              ],
+            });
+
+            // End the call after a short delay to allow the response to be sent
+            setTimeout(() => {
+              endCall();
+            }, 500);
+            return;
+          }
+
+          // Handle other tool calls (like googleSearch)
+           if (toolCall.functionCalls?.length) {
+            setTimeout(
+              () =>
+                liveAPI.client.sendToolResponse({
+                  functionResponses: toolCall.functionCalls?.map(fc => ({
+                    response: { output: { success: true } },
+                    id: fc.id,
+                    name: fc.name,
+                  })),
+                }),
+              200
+            );
+          }
+        };
+        
+        liveAPI.client.on('toolcall', onToolCall);
+      }
+
       // Initialize audio performance monitoring
       if (liveAPI.client) {
         console.log('🎵 Setting up audio performance monitoring...');
@@ -512,6 +563,11 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
 
   const endCall = useCallback(async () => {
     try {
+      // Clean up tool call listener before disconnecting
+      if (liveAPI.client) {
+        liveAPI.client.off('toolcall');
+      }
+      
       await liveAPI.disconnect();
       setIsCallActive(false);
       setCallDuration(0);

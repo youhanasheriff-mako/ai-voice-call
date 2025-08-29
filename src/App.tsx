@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './App.scss';
 import { LiveAPIProvider } from './module/contexts/LiveAPIContext';
-import { SalesConsultant } from './module/components/SalesConsultant';
+// import { SalesConsultant } from './module/components/SalesConsultant';
 import { FloatingFeature } from './module/audio/floating-feature';
 import { AudioModal } from './module/audio/audio-modal/AudioModal';
 import { AudioLines } from 'lucide-react';
@@ -38,7 +38,7 @@ function App() {
             >
               <AudioLines size={24} />
             </button>
-            <SalesConsultant />
+            {/* <SalesConsultant /> */}
           </main>
         </div>
       </LiveAPIProvider>
