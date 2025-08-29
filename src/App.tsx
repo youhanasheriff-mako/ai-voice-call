@@ -41,10 +41,8 @@ function App() {
             {/* <SalesConsultant /> */}
           </main>
         </div>
+        <FloatingFeature />
       </LiveAPIProvider>
-
-      <FloatingFeature />
-
       <AudioModal isOpen={isAudioModalOpen} onClose={handleCloseAudioModal} />
     </div>
   );
