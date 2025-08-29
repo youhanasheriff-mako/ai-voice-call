@@ -79,7 +79,6 @@ function InitAIConfigComponent() {
 
         // Disconnect the client after a short delay to allow the response to be sent
         setTimeout(() => {
-          // client.disconnect();
           endCall();
         }, 500);
         return;
@@ -105,6 +104,7 @@ function InitAIConfigComponent() {
     return () => {
       client.off('toolcall', onToolCall);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [client]);
 
   return <div className="sales-consultant-interface" />;

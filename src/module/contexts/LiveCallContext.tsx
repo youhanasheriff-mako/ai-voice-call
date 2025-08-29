@@ -31,6 +31,9 @@ interface LiveCallContextType extends UseLiveAPIResults {
   startCall: () => Promise<void>;
   endCall: () => Promise<void>;
 
+  // Overlay management
+  setOverlayCloseCallback: (callback: (() => void) | null) => void;
+
   // Audio controls
   isMuted: boolean;
   isSpeakerOn: boolean;
@@ -115,6 +118,9 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
   // Session management
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [sessionMetadata, setSessionMetadata] = useState<any | null>(null);
+
+  // Overlay management
+  const [overlayCloseCallback, setOverlayCloseCallback] = useState<(() => void) | null>(null);
 
   // Initialize AudioRecorder
   useEffect(() => {
@@ -554,6 +560,11 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
           setSessionMetadata(null);
         }
       }
+
+      // Close overlay if callback is set
+      if (overlayCloseCallback) {
+        overlayCloseCallback();
+      }
     } catch (error) {
       console.error('Failed to end call:', error);
       setCallError(
@@ -680,6 +691,7 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
     callError,
     startCall,
     endCall,
+    setOverlayCloseCallback,
     isMuted,
     isSpeakerOn,
     inVolume,

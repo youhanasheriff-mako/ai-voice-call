@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import FloatingActionButton from './FloatingActionButton';
 import MobilePhoneOverlay from './MobilePhoneOverlay';
+import { useLiveCall } from '../../contexts/LiveCallContext';
 
 const FloatingFeature: React.FC = () => {
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
+  const { setOverlayCloseCallback } = useLiveCall();
 
   const handleToggleOverlay = () => {
     setIsOverlayOpen(!isOverlayOpen);
@@ -12,6 +14,16 @@ const FloatingFeature: React.FC = () => {
   const handleCloseOverlay = () => {
     setIsOverlayOpen(false);
   };
+
+  useEffect(() => {
+    // Register the overlay close callback with the context
+    setOverlayCloseCallback(handleCloseOverlay);
+
+    // Cleanup on unmount
+    return () => {
+      setOverlayCloseCallback(null);
+    };
+  }, [setOverlayCloseCallback]);
 
   return (
     <>
