@@ -69,6 +69,20 @@ const VideoCallInterfaceContent: React.FC<VideoCallInterfaceProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connected, isCallActive]); // Removed startCall from dependencies to prevent infinite loop
 
+  // Separate useEffect for component unmount cleanup
+  useEffect(() => {
+    return () => {
+      // End call if still active when component unmounts
+      if (isCallActive || connected) {
+        console.log('🔚 VideoCallInterface unmounting - ending active call');
+        endCall().catch(error => {
+          console.error('Failed to end call during component cleanup:', error);
+        });
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array - only runs on mount/unmount
+
   // AI speaking detection based on volume
   useEffect(() => {
     if (!connected) {

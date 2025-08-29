@@ -461,11 +461,6 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
 
   const endCall = useCallback(async () => {
     try {
-      // Clean up tool call listener before disconnecting
-      if (liveAPI.client) {
-        liveAPI.client.off('toolcall');
-      }
-
       await liveAPI.disconnect();
       setIsCallActive(false);
       setCallDuration(0);
@@ -474,6 +469,14 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
       setIsRecovering(false);
       setRetryCount(0);
       setIsConnecting(false);
+
+      // Explicitly stop audio recording before disconnecting
+      if (audioRecorderRef.current) {
+        console.log(
+          '🎤 Explicitly stopping audio recording during call end...'
+        );
+        audioRecorderRef.current.stop();
+      }
 
       // Audio session cleanup and data persistence
       if (currentSessionId) {
