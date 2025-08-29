@@ -80,7 +80,7 @@ function InitAIConfigComponent() {
         // Disconnect the client after a short delay to allow the response to be sent
         setTimeout(() => {
           endCall();
-        }, 500);
+        }, 1000);
         return;
       }
 

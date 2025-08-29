@@ -120,7 +120,9 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
   const [sessionMetadata, setSessionMetadata] = useState<any | null>(null);
 
   // Overlay management
-  const [overlayCloseCallback, setOverlayCloseCallback] = useState<(() => void) | null>(null);
+  const [overlayCloseCallback, setOverlayCloseCallback] = useState<
+    (() => void) | null
+  >(null);
 
   // Initialize AudioRecorder
   useEffect(() => {
@@ -491,8 +493,8 @@ export const LiveCallProvider: React.FC<LiveCallProviderProps> = ({
         console.log(
           '🎤 Explicitly stopping audio recording during call end...'
         );
-        audioRecorderRef.current.stop();
       }
+      audioRecorderRef.current?.stop();
 
       // Audio session cleanup and data persistence
       if (currentSessionId) {
